@@ -1,0 +1,145 @@
+
+/* Sidebar layout */
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 200px;
+  background-color: #f8f9fa;
+  height: 100%;
+  position: fixed;
+  left: 0;
+  top: 0;
+  padding: 1rem;
+  overflow-y: auto;
+  border-right: 1px solid #dee2e6;
+  transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.main-content {
+  margin-left: 200px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  transition: margin-left 0.3s ease;
+  background-color: rgb(227, 239, 251);
+}
+
+.sidebar.collapsed + .main-content {
+  margin-left: 0;
+}
+
+.sticky-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}
+
+.content-scroll {
+  overflow-y: auto;
+  padding: 1rem;
+  flex-grow: 1;
+}
+
+.sidebar .nav-link:hover {
+  background-color: #759fdd; 
+  color: white;
+}
+.sidebar .nav-link.selected {
+  background-color: #425b81;
+  color: white !important;
+}
+
+
+.messageBubble {
+
+  max-width: '80%';
+  padding: '0.5rem 0.75rem';
+  border-radius: '1rem';
+  font-size: '0.875rem';
+  word-wrap: 'break-word';
+  white-space: 'pre-wrap';
+  overflow-wrap: 'break-word';
+}
+.chat-canvas-body{
+
+  height: '100%';
+  background-color: rgb(227, 239, 251);
+}
+
+
+.notification-menu {
+  max-height: 300px; /* Adjust the max height as per your design */
+  overflow-y: auto;
+}
+
+
+/* Active page button styles */
+.page-item.active .page-link {
+  background-color: rgb(33, 37, 41); /* Dark background for active button */
+  color: #fff; /* White text color for active button */
+  border-color: #343a40; /* Dark border for active button */
+}
+
+/* Default link style */
+.page-item .page-link {
+  color: black; /* Default text color for page links */
+}
+
+/* Hover and Focus states */
+.page-item .page-link:hover, 
+.page-item .page-link:focus {
+  color: #fff; /* Text color should be white on hover/focus */
+  background-color: black; /* Black background on hover/focus */
+  border-color: #343a40; /* Dark border for consistency */
+}
+
+
+/* Full-page wrapper */
+.user-dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;             /* Always at least full height */
+  background-color: rgb(227, 239, 251); /* Main bg covers entire page */
+}
+
+/* Navbar stays on top */
+.user-navbar {
+  flex-shrink: 0;
+}
+
+/* Scrollable content */
+.user-main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  overflow-y: auto;              /* Content scrolls if it overflows */
+}
+
+
+.user-navbar-brand {
+  font-size: 1.1rem; /* mobile default */
+}
+
+@media (min-width: 768px) {
+  .user-navbar-brand {
+    font-size: 1.4rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .user-navbar-brand {
+    font-size: 1.7rem;
+  }
+}
