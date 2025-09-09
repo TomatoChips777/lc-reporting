@@ -10,40 +10,39 @@ import { useAuth } from '../AuthContext';
 import LandingPage from './LandingPage';
 import UserDashboard from './Users/UserDashboard';
 import MaintenanceApp from './Maintenance/MaintenanceApp';
-import ReportManagerApp from './Report Manager/ReportManager';
+import ReportManagerApp from './Report Manager/ReportManagerApp';
 function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeLink, setActiveLink] = useState(() => {
-    return localStorage.getItem("activeLink") || "Dashboard";
-  });
+  // const [sidebarOpen, setSidebarOpen] = useState(true);
+  // const [activeLink, setActiveLink] = useState(() => {
+  //   return localStorage.getItem("activeLink") || "Dashboard";
+  // });
 
-  const location = useLocation();
+  // const location = useLocation();
 
-  useEffect(() => {
-    const path = location.pathname;
+  // useEffect(() => {
+  //   const path = location.pathname;
 
-    const routeMap = {
-      '/': 'Dashboard',
-      '/inventory': 'Inventory',
-      '/users': 'Users',
-      '/borrowing': 'Borrowing',
-      '/events': 'Calendar',
-      '/notifications': 'Notifications',
-      '/reports': 'Reports',
+  //   const routeMap = {
+  //     '/': 'Dashboard',
+  //     '/inventory': 'Inventory',
+  //     '/users': 'Users',
+  //     '/borrowing': 'Borrowing',
+  //     '/events': 'Calendar',
+  //     '/notifications': 'Notifications',
+  //     '/reports': 'Reports',
 
-    };
-    setActiveLink(routeMap[path] || 'Dashboard');
+  //   };
+  //   setActiveLink(routeMap[path] || 'Dashboard');
 
-    localStorage.setItem("activeLink", activeLink);
-  }, [location]);
+  //   localStorage.setItem("activeLink", activeLink);
+  // }, [location]);
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-
-
-  const handleLinkClick = (link) => {
-    setActiveLink(link);
-    localStorage.setItem("activeLink", link);
-  };
+  // const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  
+  // const handleLinkClick = (link) => {
+  //   setActiveLink(link);
+  //   localStorage.setItem("activeLink", link);
+  // };
   const { isAuthenticated, isLoading, role } = useAuth();
   if (isLoading) return <div>Loading...</div>;
 

@@ -29,7 +29,7 @@ function Sidebar({ sidebarOpen, activeLink, handleLinkClick }) {
       <Nav className="flex-column">
         {[
           { key: 'Dashboard', icon: 'speedometer2' },
-          // {key: 'Users', icon: 'people-fill'},
+          {key: 'Users', icon: 'people-fill'},
           {key: 'Reports', icon: 'clipboard-data'},
           // { key: 'Inventory', icon: 'box-seam' },
           // { key: 'Borrowing', icon: 'arrow-left-right' },

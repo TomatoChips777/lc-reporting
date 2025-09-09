@@ -13,6 +13,7 @@ import Dashboard from './Dashboard/Dashboard';
 import Notifications from './Notifications/Notifications';
 import Reports from './Reports/Reports';
 import LandingPage from '../LandingPage';
+import Users from './User Management/Users';
 function ReportManagerApp() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeLink, setActiveLink] = useState(() => {
@@ -65,6 +66,7 @@ function ReportManagerApp() {
                 <>
                   <Route path="/" element={<Dashboard />} />
                   <Route path='/reports' element={<Reports />} />
+                  <Route path='/users' element={<Users/>} />
                   <Route path="/events" element={<EventManager />} />
                   <Route path="/notifications" element={<Notifications />} />
                   <Route path="*" element={<Navigate to="/" />} />

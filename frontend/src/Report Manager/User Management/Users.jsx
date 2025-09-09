@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Container, Table, Form, Button, Row, Col, Card, Spinner } from 'react-bootstrap';
 import axios from 'axios';
-import PaginationControls from '../extra/Paginations';
+import PaginationControls from '../../extra/Paginations';
 import AddUserModal from './components/AddUserModal';
 import EditUserModal from './components/EditUserModal';
-import FormatDate from '../extra/DateFormat';
-import { useAuth } from '../../AuthContext';
+import FormatDate from '../../extra/DateFormat';
+import { useAuth } from '../../../AuthContext';
 function Users() {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
