@@ -52,7 +52,7 @@ function ReportManagerApp() {
 
   return (
     <>
-      {isAuthenticated && role === 'Staff' ? (
+      {isAuthenticated && role === 'Report Manager' ? (
         <div className="layout">
           <Sidebar
             sidebarOpen={sidebarOpen}

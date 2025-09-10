@@ -7,7 +7,8 @@ const ViewReport = ({ show, handleClose, report }) => {
   const [formData, setFormData] = useState({
     priority: '',
     status: '',
-    issue_type: ''
+    category: '',
+    location: ''
   });
   const [saving, setSaving] = useState(false);
 
@@ -20,7 +21,8 @@ const ViewReport = ({ show, handleClose, report }) => {
       setFormData({
         priority: report.priority || '',
         status: report.status || '',
-        issue_type: report.issue_type || ''
+        category: report.category || '',
+        location: report.location || '',
       });
     }
   }, [report]);
@@ -65,7 +67,7 @@ const ViewReport = ({ show, handleClose, report }) => {
     try {
       setSaving(true);
       const response = await axios.put(
-        `${import.meta.env.VITE_UPDATE_REPORT}/${report.id}`,
+        `${import.meta.env.VITE_UPDATE_MAINTENANCE_REPORT}/${report.id}`,
         formData
       );
 
@@ -156,11 +158,11 @@ const ViewReport = ({ show, handleClose, report }) => {
 
           {/* Issue Type */}
           <Row className="mb-3">
-            <Col sm={3}><strong>Issue Type:</strong></Col>
+            <Col sm={3}><strong>Category:</strong></Col>
             <Col>
               <Form.Select
-                name="issue_type"
-                value={formData.issue_type}
+                name="category"
+                value={formData.category}
                 onChange={handleInputChange}
               >
                 <option value="">Select issue type</option>

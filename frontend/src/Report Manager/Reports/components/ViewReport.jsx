@@ -7,7 +7,9 @@ const ViewReport = ({ show, handleClose, report }) => {
   const [formData, setFormData] = useState({
     priority: '',
     status: '',
-    issue_type: ''
+    report_type: '',
+    location: '',
+    category: ''
   });
   const [saving, setSaving] = useState(false);
 
@@ -15,12 +17,18 @@ const ViewReport = ({ show, handleClose, report }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingChange, setPendingChange] = useState(null);
 
+  // For validation/error modal
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   useEffect(() => {
     if (report) {
       setFormData({
         priority: report.priority || '',
         status: report.status || '',
-        issue_type: report.issue_type || ''
+        report_type: report.report_type || '',
+        location: report.location || '',
+        category: formData.category || '',
       });
     }
   }, [report]);
@@ -33,7 +41,6 @@ const ViewReport = ({ show, handleClose, report }) => {
       ((report?.status === "Resolved" && value !== "Resolved") ||
         (report?.status === "In Progress" && value === "Pending"))
     ) {
-      // Open confirmation modal
       setPendingChange({ name, value });
       setShowConfirm(true);
     } else {
@@ -43,6 +50,7 @@ const ViewReport = ({ show, handleClose, report }) => {
       }));
     }
   };
+
   const confirmStatusChange = () => {
     if (pendingChange) {
       setFormData((prev) => ({
@@ -58,9 +66,23 @@ const ViewReport = ({ show, handleClose, report }) => {
     setShowConfirm(false);
     setPendingChange(null);
   };
-
   const handleSave = async () => {
     if (!report?.id) return;
+
+
+    if (!formData.priority || !formData.report_type) {
+      setErrorMessage("Please select both a priority level and a report type before saving.");
+      setShowError(true);
+      return;
+    } else if (!formData.priority) {
+      setErrorMessage("Please select a priority level before saving.");
+      setShowError(true);
+      return;
+    } else if (!formData.report_type) {
+      setErrorMessage("Please select a report type before saving.");
+      setShowError(true);
+      return;
+    }
 
     try {
       setSaving(true);
@@ -70,14 +92,15 @@ const ViewReport = ({ show, handleClose, report }) => {
       );
 
       if (response.status === 200) {
-        // console.log("Report updated:", response.data);
         handleClose();
       } else {
-        alert("Failed to save changes. Please try again.");
+        setErrorMessage("Failed to save changes. Please try again.");
+        setShowError(true);
       }
     } catch (error) {
       console.error("Failed to update report:", error);
-      alert("Failed to save changes. Please try again.");
+      setErrorMessage("Failed to save changes. Please try again.");
+      setShowError(true);
     } finally {
       setSaving(false);
     }
@@ -154,41 +177,44 @@ const ViewReport = ({ show, handleClose, report }) => {
             </Col>
           </Row>
 
-          {/* Issue Type */}
+          {/* Report Type */}
           <Row className="mb-3">
-            <Col sm={3}><strong>Issue Type:</strong></Col>
+            <Col sm={3}><strong>Report Type:</strong></Col>
             <Col>
               <Form.Select
-                name="issue_type"
-                value={formData.issue_type}
+                name="report_type"
+                value={formData.report_type}
                 onChange={handleInputChange}
               >
-                <option value="">Select issue type</option>
-                <option value="Electrical">Electrical</option>
-                <option value="Plumbing">Plumbing</option>
-                <option value="Cleaning">Cleaning</option>
-                <option value="General Repair">General Repair</option>
-                <option value="Others">Other</option>
+                <option value="">Select report type</option>
+                <option value="Incident">Incident</option>
+                <option value="Lost And Found">Lost And Found</option>
+                <option value="Maintenance">Maintenance</option>
               </Form.Select>
             </Col>
           </Row>
 
-          {/* Status */}
-          <Row className="mb-3">
-            <Col sm={3}><strong>Status:</strong></Col>
-            <Col>
-              <Form.Select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-              >
-                <option value="">Select status</option>
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Resolved">Resolved</option>
-              </Form.Select>
-            </Col>
-          </Row>
+          {/* Issue Type - only if Maintenance */}
+          {formData.report_type === "Maintenance" && (
+            <Row className="mb-3">
+              <Col sm={3}><strong>Category:</strong></Col>
+              <Col>
+                <Form.Select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select Category</option>
+                  <option value="Electrical">Electrical</option>
+                  <option value="Plumbing">Plumbing</option>
+                  <option value="Cleaning">Cleaning</option>
+                  <option value="General Repair">General Repair</option>
+                  <option value="Other">Other</option>
+                </Form.Select>
+              </Col>
+            </Row>
+          )}
+
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose} disabled={saving}>
@@ -226,10 +252,23 @@ const ViewReport = ({ show, handleClose, report }) => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Validation/Error Modal */}
+      <Modal show={showError} onHide={() => setShowError(false)} centered animation={false}>
+        <Modal.Header closeButton>
+          <Modal.Title>Notice</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>{errorMessage}</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowError(false)}>
+            OK
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };
 
 export default ViewReport;
-
-

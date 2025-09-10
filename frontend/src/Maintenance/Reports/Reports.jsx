@@ -25,8 +25,8 @@ function Reports() {
     //fetch reports
     const fetchReports = async () => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_GET_REPORTS}`);
-            setReports(response.data);
+            const response = await axios.get(`${import.meta.env.VITE_MAINTENANCE_REPORT}`);
+            setReports(response.data.reports);
 
         } catch (error) {
             console.log("Error fetching reports:", error);
@@ -39,7 +39,7 @@ function Reports() {
                 report.description.toLowerCase().includes(search.toLowerCase()) ||
                 report.location.toLowerCase().includes(search.toLowerCase()) ||
                 report.reporter_name.toLowerCase().includes(search.toLowerCase()) ||
-                report.issue_type.toLowerCase().includes(search.toLowerCase());
+                report.category.toLowerCase().includes(search.toLowerCase());
 
             const matchesStatus = statusFilter === 'All' || report.status === statusFilter;
             const matchesPriority = priorityFilter === 'All' || report.priority === priorityFilter;
@@ -172,9 +172,9 @@ function Reports() {
                         <tr>
                             <th>Date</th>
                             <th>Reported By</th>
-                            <th>Type</th>
                             <th>Location</th>
                             <th>Description</th>
+                            <th>Type</th>
                             <th className='text-center'>Priority</th>
                             <th className='text-center'>Status</th>
                             <th className='text-center'>Actions</th>
@@ -186,9 +186,9 @@ function Reports() {
                                 <tr key={report.id}>
                                     <td>{FormatDate(report.created_at)}</td>
                                     <td>{report.reporter_name}</td>
-                                    <td>{report.issue_type}</td>
                                     <td><TextTruncate text={report.location} maxLength={30} /></td>
                                     <td><TextTruncate text={report.description} maxLength={50} /></td>
+                                    <td>{report.category}</td>
                                     <td>{report.priority}</td>
                                     {/* <td className='text-center'>{report.status}</td> */}
                                     <td className='text-center'>

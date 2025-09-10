@@ -50,7 +50,7 @@ function App() {
     <>
       {isAuthenticated && role === 'Admin' ? (
         <MaintenanceApp />
-      ) : isAuthenticated && role == 'Staff' ? (
+      ) : isAuthenticated && role == 'Report Manager' ? (
         <ReportManagerApp />
       ) :
         isAuthenticated && role == 'User' ?

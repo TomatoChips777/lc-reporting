@@ -113,26 +113,6 @@ router.get('/get-all-users', async (req, res) => {
     }
 });
 
-// router.put('/update-user/:userId', async (req, res) => {
-//     const userId = req.params.userId;
-//     const { name, email, role,status } = req.body;
-
-//     try {
-//         const result = await db.queryAsync(
-//             'UPDATE tbl_users SET name = ?, email = ?, role = ?, status = ? WHERE id = ?',
-//             [name, email, role, status, userId]
-//         );
-
-//         if (result.affectedRows === 0) {
-//             return res.status(404).json({ success: false, message: 'User not found' });
-//         }
-
-//         res.json({ success: true, message: 'User updated successfully' });
-//     } catch (err) {
-//         console.error('Update user error:', err);
-//         res.status(500).json({ success: false, message: 'Database error' });
-//     }
-// });
 
 router.put('/activate-deactivate-user/:userId', async (req, res) => {
     const { userId } = req.params;
@@ -155,32 +135,6 @@ router.put('/activate-deactivate-user/:userId', async (req, res) => {
         res.status(500).json({ success: false, message: 'Database error' });
     }
 });
-
-// router.post('/add-user', async (req, res) => {
-//     const { name, email, role } = req.body;
-
-//     if (!name || !email || !role) {
-//         return res.status(400).json({ success: false, message: 'Missing required fields' });
-//     }
-
-//     try {
-//         const rows = await db.queryAsync('SELECT id FROM tbl_users WHERE email = ?', [email]);
-
-//         if (rows.length > 0) {
-//             return res.status(409).json({ success: false, message: 'User already exists' });
-//         }
-
-//         await db.queryAsync(
-//             'INSERT INTO tbl_users (name, email, role) VALUES (?, ?, ?)',
-//             [name, email, role]
-//         );
-
-//         return res.status(200).json({ success: true, message: 'User created successfully' });
-//     } catch (err) {
-//         console.error('Add user error:', err);
-//         res.status(500).json({ success: false, message: 'Failed to create user' });
-//     }
-// });
 
 
 router.post('/manual-signin', async (req, res) => {

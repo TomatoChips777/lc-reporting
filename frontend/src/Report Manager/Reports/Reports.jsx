@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Card, Col, Container, Row, Form, Button, Table } from 'react-bootstrap';
+import { Card, Col, Container, Row, Form, Button } from 'react-bootstrap';
 import PaginationControls from '../../extra/Paginations';
 import ViewReport from './components/ViewReport';
 import CreateReport from './components/CreateReport';
@@ -16,37 +16,38 @@ function Reports() {
     const [showAlert, setShowAlert] = useState(false);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
-    const [priorityFilter, setPriorityFilter] = useState('All');
+    const [anonymousFilter, setAnonymousFilter] = useState('All');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [selectedReport, setSelectedReport] = useState('');
     const [reportToRemove, setReportToRemove] = useState('');
 
-    //fetch reports
+    // fetch reports
     const fetchReports = async () => {
         try {
             const response = await axios.get(`${import.meta.env.VITE_GET_REPORTS}`);
             setReports(response.data);
-
         } catch (error) {
             console.log("Error fetching reports:", error);
         }
-    }
+    };
 
     const filteredReports = useMemo(() => {
         return reports.filter(report => {
             const matchesSearch =
                 report.description.toLowerCase().includes(search.toLowerCase()) ||
                 report.location.toLowerCase().includes(search.toLowerCase()) ||
-                report.reporter_name.toLowerCase().includes(search.toLowerCase()) ||
-                report.issue_type.toLowerCase().includes(search.toLowerCase());
+                report.reporter_name.toLowerCase().includes(search.toLowerCase());
 
             const matchesStatus = statusFilter === 'All' || report.status === statusFilter;
-            const matchesPriority = priorityFilter === 'All' || report.priority === priorityFilter;
-            return matchesSearch && matchesStatus && matchesPriority;
-        });
-    }, [reports, search, statusFilter, priorityFilter]);
+            const matchesAnonymous =
+                anonymousFilter === 'All' ||
+                (anonymousFilter === 'Anonymous' && report.is_anonymous === 1) ||
+                (anonymousFilter === 'Non-Anonymous' && report.is_anonymous === 0);
 
+            return matchesSearch && matchesStatus && matchesAnonymous;
+        });
+    }, [reports, search, statusFilter, anonymousFilter]);
 
     const currentData = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
@@ -57,63 +58,60 @@ function Reports() {
         fetchReports();
         const socket = io(`${import.meta.env.VITE_API_URL}`);
         socket.on('updateReports', () => {
-
             fetchReports();
         });
 
         return () => {
             socket.disconnect();
         };
-
     }, []);
 
     const handleOpenViewModal = (report) => {
         setSelectedReport(report);
-        setShowViewModal(true)
+        setShowViewModal(true);
     };
-    const handleCloseViewModal = () => {
-        setShowViewModal(false);
-    };
+    const handleCloseViewModal = () => setShowViewModal(false);
 
-    const handleOpenCreateModal = () => {
-        setShowCreateModal(true);
-    };
-    const handleCloseCreateModal = () => {
-        setShowCreateModal(false);
-    };
+    const handleOpenCreateModal = () => setShowCreateModal(true);
+    const handleCloseCreateModal = () => setShowCreateModal(false);
+
     const handleShowAlert = (report) => {
-
         setShowAlert(true);
         setReportToRemove(report);
     };
-    const handleCloseAlert = () => {
-        setShowAlert(false);
-    };
-
-    const handleStatusChange = async (e, report) => {
-        const newStatus = e.target.value;
-
-        // if(report.status==)
-    }
+    const handleCloseAlert = () => setShowAlert(false);
 
     const handlePageSizeChange = (e) => {
         setItemsPerPage(Number(e.target.value));
         setCurrentPage(1);
     };
+    const getTimeAgo = (timestamp) => {
+        const units = [
+            { name: 'year', seconds: 31536000 },
+            { name: 'month', seconds: 2592000 },
+            { name: 'day', seconds: 86400 },
+            { name: 'hr', seconds: 3600 },
+            { name: 'min', seconds: 60 },
+            { name: 'sec', seconds: 1 },
+        ];
+        const diff = Math.floor((Date.now() - new Date(timestamp)) / 1000);
+        for (let unit of units) {
+            const value = Math.floor(diff / unit.seconds);
+            if (value > 0) return `${value} ${unit.name}${value > 1 ? 's' : ''} ago`;
+        }
+        return 'just now';
+    };
     return (
-        <Container fluid className='p-0 y-0' >
-            <Card className='p-1'>
-
-                <h1 className='mb-4 text-center'>
-                    Reports Management
-                </h1>
+        <Container fluid className="p-0 y-0">
+            <Card className="p-1">
+                <h1 className="mb-4 text-center">Reports Management</h1>
                 <Row className="mb-3 p-3 align-items-end">
                     {/* Search */}
                     <Col md={4}>
                         <Form.Group controlId="searchReports">
                             <Form.Label>Search</Form.Label>
                             <Form.Control
-                                className='p-3 border-1'
+                                className="p-3 border-1"
                                 type="text"
                                 placeholder="Search Reports"
                                 value={search}
@@ -127,7 +125,7 @@ function Reports() {
                         <Form.Group controlId="filterStatus">
                             <Form.Label>Filter By Status</Form.Label>
                             <Form.Select
-                                className='p-3 border-1'
+                                className="p-3 border-1"
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
                             >
@@ -139,90 +137,100 @@ function Reports() {
                         </Form.Group>
                     </Col>
 
-                    {/* Priority Filter */}
+                    {/* Anonymous Filter */}
                     <Col md={3}>
-                        <Form.Group controlId="filterPriority">
-                            <Form.Label>Filter By Priority</Form.Label>
+                        <Form.Group controlId="filterAnonymous">
+                            <Form.Label>Filter By Reporter</Form.Label>
                             <Form.Select
-                                className='p-3 border-1'
-                                value={priorityFilter}
-                                onChange={(e) => setPriorityFilter(e.target.value)}
+                                className="p-3 border-1"
+                                value={anonymousFilter}
+                                onChange={(e) => setAnonymousFilter(e.target.value)}
                             >
                                 <option value="All">All</option>
-                                <option value="Low">Low</option>
-                                <option value="Medium">Medium</option>
-                                <option value="High">High</option>
-                                <option value="Urgent">Urgent</option>
+                                <option value="Anonymous">Anonymous</option>
+                                <option value="Non-Anonymous">Non-Anonymous</option>
                             </Form.Select>
                         </Form.Group>
                     </Col>
 
                     {/* New Report Button */}
                     <Col md={2} className="d-flex justify-content-end">
-                        <Button variant="dark" className='p-3' onClick={handleOpenCreateModal}>
+                        <Button variant="dark" className="p-3" onClick={handleOpenCreateModal}>
                             <i className="bi bi-plus-circle me-2"></i>
                             New Report
                         </Button>
                     </Col>
                 </Row>
 
-                <Table striped bordered hover responsive className='mb-0'>
+                {/* Reports List */}
+                <ul className="list-unstyled row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 px-3">
+                    {currentData.length > 0 ? (
+                        currentData.map((report) => (
+                            <li key={report.id} className="col">
+                                <Card className="h-100 shadow-sm border-1">
+                                    <Card.Body>
+                                        <div className="d-flex justify-content-between align-items-start mb-2">
+                                            <span className="fw-bold">{FormatDate(report.created_at)}</span>
+                                            <span
+                                                className={`badge rounded-0 ${report.status === "Pending"
+                                                        ? "bg-warning text-dark"
+                                                        : report.status === "In Progress"
+                                                            ? "bg-primary"
+                                                            : "bg-success"
+                                                    }`}
+                                            >
+                                                {report.status}
+                                            </span>
+                                        </div>
 
-                    <thead className='table-dark'>
-                        <tr>
-                            <th>Date</th>
-                            <th>Reported By</th>
-                            <th>Type</th>
-                            <th>Location</th>
-                            <th>Description</th>
-                            <th className='text-center'>Priority</th>
-                            <th className='text-center'>Status</th>
-                            <th className='text-center'>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentData.length > 0 ? (
-                            currentData.map(report => (
-                                <tr key={report.id}>
-                                    <td>{FormatDate(report.created_at)}</td>
-                                    <td>{report.reporter_name}</td>
-                                    <td>{report.issue_type}</td>
-                                    <td><TextTruncate text={report.location} maxLength={30} /></td>
-                                    <td><TextTruncate text={report.description} maxLength={50} /></td>
-                                    <td>{report.priority}</td>
-                                    {/* <td className='text-center'>{report.status}</td> */}
-                                    <td className='text-center'>
-                                        <span
-                                            className={`badge rounded-0 ${report.status === "Pending"
-                                                ? "bg-warning text-dark"
-                                                : report.status === "In Progress"
-                                                    ? "bg-primary"
-                                                    : "bg-success"
-                                                }`}
-                                        >
-                                            {report.status}
-                                        </span>
-                                    </td>
-                                    <td className='text-center'>
-                                        <Button variant='info' size='sm' className='me-2' onClick={() => handleOpenViewModal(report)}>
-                                            <i className='bi bi-eye'></i>
-                                        </Button>
-                                        <Button variant='danger' size='sm' onClick={() => handleShowAlert(report)}>
-                                            <i className='bi bi-trash'></i>
-                                        </Button>
-                                    </td>
-                                </tr>
-                            ))
+                                        <h6 className="fw-semibold">{report.issue_type}</h6>
+                                        <p className="mb-1 text-muted">
+                                            <i className="bi bi-person-fill me-2"></i>
+                                            {report.is_anonymous ? "Anonymous" : report.reporter_name}
+                                        </p>
+                                        <p className="mb-1">
+                                            <i className="bi bi-geo-alt-fill me-2"></i>
+                                            <TextTruncate text={report.location} maxLength={30} />
+                                        </p>
+                                        <p className="mb-2">
+                                            <TextTruncate text={report.description} maxLength={50} />
+                                        </p>
 
-                        ) : (
-                            <tr>
-                                <td colSpan="7" className="text-center">No records found.</td>
-                            </tr>
-                        )}
+                                        <div className="d-flex justify-content-between align-items-center">
+                                            <span className="badge bg-dark">
+                                                {getTimeAgo(report.created_at)}
+                                            </span>
+                                            <div>
+                                                <Button
+                                                    variant="info"
+                                                    size="sm"
+                                                    className="me-2"
+                                                    onClick={() => handleOpenViewModal(report)}
+                                                >
+                                                    <i className="bi bi-eye"></i>
+                                                </Button>
+                                                <Button
+                                                    variant="danger"
+                                                    size="sm"
+                                                    onClick={() => handleShowAlert(report)}
+                                                >
+                                                    <i className="bi bi-trash"></i>
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            </li>
+                        ))
+                    ) : (
+                        <li className="col">
+                            <Card className="text-center p-3">
+                                <Card.Body>No records found.</Card.Body>
+                            </Card>
+                        </li>
+                    )}
+                </ul>
 
-                    </tbody>
-
-                </Table>
                 <Card.Footer>
                     <PaginationControls
                         filteredReports={filteredReports}
@@ -233,29 +241,12 @@ function Reports() {
                     />
                 </Card.Footer>
             </Card>
-            
-                <ViewReport
-                    show={showViewModal}
-                    handleClose={handleCloseViewModal}
-                    report={selectedReport}
-                />
 
-                <CreateReport
-                    show={showCreateModal}
-                    handleClose={handleCloseCreateModal}
-                />
-
-                <ArchiveAlert
-                    show={showAlert}
-                    handleClose={handleCloseAlert}
-                    report={reportToRemove}
-                />
-
+            <ViewReport show={showViewModal} handleClose={handleCloseViewModal} report={selectedReport} />
+            <CreateReport show={showCreateModal} handleClose={handleCloseCreateModal} />
+            <ArchiveAlert show={showAlert} handleClose={handleCloseAlert} report={reportToRemove} />
         </Container>
-
-    )
-
-};
+    );
+}
 
 export default Reports;
-

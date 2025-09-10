@@ -14,42 +14,45 @@ router.get('/:user_id', async (req, res) => {
   //   const reportsTodayResult = await db.queryAsync(reportsToday);
     // Overdue Returns: Count items that are not returned and have passed their return date
     const urgentReports = `
-    SELECT COUNT(*) AS count
-    FROM tbl_reports
-    WHERE priority = 'Urgent' AND status != 'Resolved'
+    SELECT COUNT(*) AS count FROM tbl_maintenance_reports tmr 
+    LEFT JOIN tbl_reports tr ON tmr.report_id = tr.id     
+    WHERE tmr.priority = 'Urgent' AND tr.status != 'Resolved'; 
     `;
     const urgentReportsResult = await db.queryAsync(urgentReports);
 
     // Active Borrowers: Count distinct borrowers with at least one "Pending" or "Approved" status
     const highPriorityReports = `
     SELECT COUNT(*) AS count
-    FROM tbl_reports
-    WHERE priority = 'High' AND status != 'Resolved'
+    FROM tbl_maintenance_reports tmr LEFT JOIN
+    tbl_reports tr ON tmr.report_id = tr.id
+    WHERE tmr.priority = 'High' AND tr.status != 'Resolved'
     `;
     const highPriorityReportsResult = await db.queryAsync(highPriorityReports);
 
     // Available Items
     const mediumPriorityReports = `
       SELECT COUNT(*) AS count
-      FROM tbl_reports
-      WHERE priority = 'Medium' AND status != 'Resolved'
+      FROM tbl_maintenance_reports tmr LEFT JOIN tbl_reports tr
+      ON tmr.report_id = tr.id
+      WHERE tmr.priority = 'Medium' AND tr.status != 'Resolved'
     `;
 
     const mediumPriorityReportsResult = await db.queryAsync(mediumPriorityReports);
 
       const lowPriorityReports = `
       SELECT COUNT(*) AS count
-      FROM tbl_reports
-      WHERE priority = 'Low' AND status != 'Resolved'
+      FROM tbl_maintenance_reports tmr LEFT JOIN tbl_reports tr
+      ON tmr.report_id = tr.id
+      WHERE tmr.priority = 'Low' AND tr.status != 'Resolved'
     `;
 
     const lowPriorityReportsResult = await db.queryAsync(lowPriorityReports);
 
-    // Fetch recent borrowings
     const reportsFrequency = `
       SELECT *
-      FROM tbl_reports
-      ORDER BY created_at DESC
+      FROM tbl_maintenance_reports tmr LEFT JOIN tbl_reports tr
+      ON tmr.report_id = tr.id
+      ORDER BY tr.created_at DESC
     `;
     const reportFrequencyResult = await db.queryAsync(reportsFrequency);
 
@@ -120,47 +123,49 @@ router.get('/:user_id', async (req, res) => {
 
     const inProgressCountQuery = `
       SELECT COUNT(*) AS count
-      FROM tbl_reports
-      WHERE status = 'In Progress'
-        AND archived = 0
+      FROM tbl_maintenance_reports tmr LEFT JOIN tbl_reports tr
+      ON tmr.report_id = tr.id
+      WHERE tr.status = 'In Progress'
+        AND tr.archived = 0
     `;
     const inProgressResult = await db.queryAsync(inProgressCountQuery);
     const reportsTodayQuery = `
       SELECT COUNT(*) AS count
-      FROM tbl_reports
-      WHERE DATE(created_at) = CURDATE()
-        AND archived = 0
+      FROM tbl_maintenance_reports tmr LEFT JOIN tbl_reports tr
+      ON tmr.report_id = tr.id
+      WHERE DATE(tr.created_at) = CURDATE()
+        AND tr.archived = 0
     `;
     const reportsTodayResult = await db.queryAsync(reportsTodayQuery);
 
     const reportsTodayListQuery = `
-     SELECT id, location, description, priority, created_at, updated_at,
-      TIME_FORMAT(created_at, '%h:%i %p') AS time
-      FROM tbl_reports
-      WHERE DATE(created_at) = CURDATE()
-        AND archived = 0 AND status = 'Pending'
+     SELECT tr.id, tr.location, tr.description, tmr.priority, tr.created_at, tr.updated_at,
+      TIME_FORMAT(tr.created_at, '%h:%i %p') AS time
+      FROM tbl_maintenance_reports tmr LEFT JOIN tbl_reports tr
+      ON tmr.report_id = tr.id
+      WHERE DATE(tr.created_at) = CURDATE()
+        AND tr.archived = 0 AND tr.status = 'Pending'
     `;
     const reportsTodayList = await db.queryAsync(reportsTodayListQuery);
     // In Progress Reports (list)
     const inProgressListQuery = `
-      SELECT id, location, description, priority, created_at, updated_at,
-      TIME_FORMAT(updated_at, '%h:%i %p') AS time
-      FROM tbl_reports
-      WHERE status = 'In Progress'
-        AND archived = 0
-      ORDER BY updated_at DESC
-      LIMIT 10
+      SELECT tr.id, tr.location, tr.description, tmr.priority, tr.created_at, tr.updated_at, 
+      TIME_FORMAT(tr.updated_at, '%h:%i %p') AS time 
+      FROM tbl_maintenance_reports tmr 
+      LEFT JOIN tbl_reports tr ON tmr.report_id = tr.id
+      WHERE tr.status = 'In Progress' AND tr.archived = 0 ORDER BY tr.updated_at DESC LIMIT 10; 
     `;
     const inProgressList = await db.queryAsync(inProgressListQuery);
 
     // Recently Completed Reports (list)
     const recentlyCompletedListQuery = `
-      SELECT id, location, description, priority, created_at, updated_at,
-      TIME_FORMAT(updated_at, '%h:%i %p') AS time
-      FROM tbl_reports
-      WHERE status IN ('Resolved', 'Completed')
-        AND archived = 0
-      ORDER BY updated_at DESC
+      SELECT tr.id, tr.location, tr.description, tmr.priority, tr.created_at, tr.updated_at,
+      TIME_FORMAT(tr.updated_at, '%h:%i %p') AS time
+      FROM tbl_maintenance_reports tmr LEFT JOIN tbl_reports tr
+      ON tmr.report_id = tr.id
+      WHERE tr.status IN ('Resolved', 'Completed')
+        AND tr.archived = 0
+      ORDER BY tr.updated_at DESC
       LIMIT 10
     `;
     const recentlyCompletedList = await db.queryAsync(recentlyCompletedListQuery);
