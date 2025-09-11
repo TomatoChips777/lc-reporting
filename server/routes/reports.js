@@ -108,9 +108,8 @@ router.get('/get-user-reports/:userId', (req, res) => {
     });
 });
 
-
 router.put("/admin/edit-report-type/:reportId", (req, res) => {
-    const { report_type, priority, location, category} = req.body;
+    const { report_type, priority, location, category } = req.body;
     const { reportId } = req.params;
     const updateReportQuery = "UPDATE tbl_reports SET report_type = ? WHERE id = ?";
     db.query(updateReportQuery, [report_type, reportId], (err, result) => {
@@ -129,7 +128,7 @@ router.put("/admin/edit-report-type/:reportId", (req, res) => {
 
             db.query(
                 maintenanceQuery,
-                [reportId, priority,category, priority, category],
+                [reportId, priority, category, priority, category],
                 (err, maintenanceResult) => {
                     if (err) {
                         console.error("Error updating maintenance report:", err);
@@ -236,9 +235,33 @@ router.put("/admin/edit-report-type/:reportId", (req, res) => {
         }
     });
 });
+router.put('/report/set-viewed-report/:id', (req, res) => {
+    const { id } = req.params;
+
+    const query = 'UPDATE tbl_reports SET viewed = 1 WHERE  id = ?';
+
+    db.query(query, [id], (err, result) => {
+        if (err) {
+            console.error('Error setting as viewed:', err);
+            return req.status(500).json({ success: false, message: 'Error setting as viewed' });
+        }
+
+        if (result.affectedRows > 0) {
+            req.io.emit('updateReports');
+            return res.json({
+                success: true,
+                message: "Report has been marked as viewed.",
+            });
+        }
+    })
+})
 
 router.put('/report/archive-report/:id', (req, res) => {
     const { id } = req.params;
+    const {reason} = req.body;
+    if(!reason){
+        return res.status(400).json({success: false, message: "Error reason is required."})
+    }
     const query = `UPDATE tbl_reports SET archived = 1 WHERE id = ?`;
 
     db.query(query, [id], (err, result) => {
@@ -248,43 +271,56 @@ router.put('/report/archive-report/:id', (req, res) => {
         }
 
         if (result.affectedRows > 0) {
-            const selectQuery = `SELECT * FROM tbl_reports WHERE id = ?`;
+            const selectQuery = `SELECT user_id, location FROM tbl_reports WHERE id = ?`;
 
-            db.query(selectQuery, [id], (err, rows) => {
+            db.query(selectQuery, [id], async (err, rows) => {
                 if (err) {
                     console.error("Error retrieving report details:", err);
                     return res.status(500).json({ success: false, message: "Error retrieving report details" });
                 }
 
+                if (rows.length === 0) {
+                    return res.status(404).json({ success: false, message: "Report not found after update" });
+                }
+
                 const report = rows[0];
+                const { user_id, location } = report;
 
-                const title = `Deleted Report`;
-                const message = `The report titled "${report.description} at ${report.location}" has been removed.`;
+                try {
+                    // Create notification
+                    const notifMsg = `Your report about ${location} has been archived. Reason: ${reason}`;
 
-                const notificationQuery = `
-                    INSERT INTO tbl_user_notifications (report_id, user_id, message, title) 
-                    VALUES (?, ?, ?, ?)`;
+                    const notifInsert = await db.queryAsync(
+                        'INSERT INTO notifications (message, title) VALUES (?, "Report Archived")',
+                        [notifMsg]
+                    );
+                    const notifId = notifInsert.insertId;
 
-                db.query(notificationQuery, [report.id, report.user_id, message, title], (err) => {
-                    if (err) {
-                        console.error("Error inserting notification:", err);
-                    }
-                });
+                    await db.queryAsync(
+                        'INSERT INTO notification_receivers (notification_id, user_id, is_read) VALUES (?, ?, false)',
+                        [notifId, user_id]
+                    );
 
-                req.io.emit('update');
-                return res.json({
-                    success: true,
-                    message: "Report archived successfully",
-                    affectedRow: report
-                });
+                    // Emit socket events
+                    req.io.emit('updateReports');
+                    req.io.emit('updateNotifications');
+                    req.io.emit('reportArchivedNotification', { reportId: id, notifId, userId: user_id, message: notifMsg });
+
+                    return res.json({
+                        success: true,
+                        message: "Report archived successfully and user notified",
+                        affectedRow: report
+                    });
+                } catch (notifErr) {
+                    console.error("Error sending archive notification:", notifErr);
+                    return res.status(500).json({ success: false, message: "Report archived but notification failed" });
+                }
             });
         } else {
             return res.status(404).json({ success: false, message: "Report not found or already archived" });
         }
     });
 });
-
-
 
 
 router.post("/create", upload.single('image'), (req, res) => {

@@ -60,7 +60,7 @@ const Dashboard = () => {
       <div className="d-flex justify-content-end align-items-center mb-3">
       </div>
       <Card className="mb-4">
-        <Card.Header className="fw-bold text-primary d-flex justify-content-between">
+        <Card.Header className="fw-bold d-flex justify-content-between">
           Quick Stats
         </Card.Header>
         <Card.Body>
@@ -89,7 +89,7 @@ const Dashboard = () => {
           <Row className="mb-4">
             <Col>
               <Card className="mb-3">
-                <Card.Header className="fw-semibold text-primary d-flex justify-content-between">Reports Frequency
+                <Card.Header className="fw-semibold d-flex justify-content-between">Reports Frequency
                 </Card.Header>
                 <Card.Body>
                   <Charts type="borrowingFrequency" data={reports} />
@@ -97,7 +97,7 @@ const Dashboard = () => {
               </Card>
 
               <Card className="mb-3">
-                <Card.Header className="fw-semibold text-primary d-flex justify-content-between">
+                <Card.Header className="fw-semibold d-flex justify-content-between">
                   Inventory Status
                 </Card.Header>
                 <Card.Body>
@@ -110,8 +110,8 @@ const Dashboard = () => {
         <Col md={6}>
           {/* Today's Events */}
           <Card className='mb-4'>
-            <Card.Header className="fw-semibold text-primary d-flex justify-content-between">
-              Today's Reports
+            <Card.Header className="fw-semibold d-flex justify-content-between">
+              Recent Reports
             </Card.Header>
             <Card.Body>
               {reportsToday.length === 0 ? (
@@ -140,7 +140,7 @@ const Dashboard = () => {
           </Card>
 
           <Card className='mb-4'>
-            <Card.Header className="fw-semibold text-primary d-flex justify-content-between">
+            <Card.Header className="fw-semibold d-flex justify-content-between">
               In Progress Reports
             </Card.Header>
             <Card.Body>
@@ -171,7 +171,7 @@ const Dashboard = () => {
           </Card>
 
           <Card className='mb-4'>
-            <Card.Header className="fw-semibold text-primary d-flex justify-content-between">
+            <Card.Header className="fw-semibold d-flex justify-content-between">
               Recently Completed Reports
             </Card.Header>
             <Card.Body>
@@ -203,7 +203,7 @@ const Dashboard = () => {
 
           {/* Ongoing task */}
           {/* <Card className='mb-4'>
-            <Card.Header className="fw-semibold text-primary d-flex justify-content-between">
+            <Card.Header className="fw-semibold d-flex justify-content-between">
               Ongoing Maintenance
             </Card.Header>
             <Card.Body>
@@ -234,7 +234,7 @@ const Dashboard = () => {
 
           {/* Recent Completed Task */}
           {/* <Card className='mb-4'>
-            <Card.Header className="fw-semibold text-primary d-flex justify-content-between">
+            <Card.Header className="fw-semibold d-flex justify-content-between">
               Recently Completed Task
             </Card.Header>
             <Card.Body>

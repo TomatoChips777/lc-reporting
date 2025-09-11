@@ -19,7 +19,7 @@ function LandingPage() {
         <Card className="text-center shadow-lg p-5" style={{ width: "600px" }}>
           <Card.Body>
             <Card.Title className="mb-4 fs-1 fw-bold text-success">
-              Maintenance Reporting System
+              Campus Issue Reporting System
             </Card.Title>
             <Card.Text className="mb-5 fs-4">
               Report issues quickly and help us keep the campus safe and

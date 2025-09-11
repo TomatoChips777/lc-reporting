@@ -18,7 +18,7 @@ function Reports() {
     const [statusFilter, setStatusFilter] = useState('All');
     const [anonymousFilter, setAnonymousFilter] = useState('All');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(9);
     const [selectedReport, setSelectedReport] = useState('');
     const [reportToRemove, setReportToRemove] = useState('');
 
@@ -42,11 +42,14 @@ function Reports() {
             const matchesStatus = statusFilter === 'All' || report.status === statusFilter;
             const matchesAnonymous =
                 anonymousFilter === 'All' ||
-                (anonymousFilter === 'Anonymous' && report.is_anonymous === 1) ||
+                (anonymousFilter === 'Anonymous' && report.is_anonymous === 1);
                 (anonymousFilter === 'Non-Anonymous' && report.is_anonymous === 0);
 
             return matchesSearch && matchesStatus && matchesAnonymous;
-        });
+        }).sort((a,b) =>{
+            const order  = {"Pending": 1, "In Progress": 2, "Resolved": 3 };
+            return (order[a.status] || 99) - (order[b.status] || 99);
+        })
     }, [reports, search, statusFilter, anonymousFilter]);
 
     const currentData = useMemo(() => {
@@ -66,7 +69,14 @@ function Reports() {
         };
     }, []);
 
-    const handleOpenViewModal = (report) => {
+    const handleOpenViewModal = async (report) => {
+        if (report.viewed === 0) {
+            try {
+                const response = await axios.put(`${import.meta.env.VITE_MARK_AS_VIEWED}/${report?.id}`)
+            } catch (error) {
+
+            }
+        }
         setSelectedReport(report);
         setShowViewModal(true);
     };
@@ -83,7 +93,7 @@ function Reports() {
 
     const handlePageSizeChange = (e) => {
         setItemsPerPage(Number(e.target.value));
-        setCurrentPage(1);
+        setCurrentPage(1);   
     };
     const getTimeAgo = (timestamp) => {
         const units = [
@@ -173,10 +183,10 @@ function Reports() {
                                             <span className="fw-bold">{FormatDate(report.created_at)}</span>
                                             <span
                                                 className={`badge rounded-0 ${report.status === "Pending"
-                                                        ? "bg-warning text-dark"
-                                                        : report.status === "In Progress"
-                                                            ? "bg-primary"
-                                                            : "bg-success"
+                                                    ? "bg-warning text-dark"
+                                                    : report.status === "In Progress"
+                                                        ? "bg-primary"
+                                                        : "bg-success"
                                                     }`}
                                             >
                                                 {report.status}
@@ -197,7 +207,7 @@ function Reports() {
                                         </p>
 
                                         <div className="d-flex justify-content-between align-items-center">
-                                            <span className="badge bg-dark">
+                                            <span className="badge bg-secondary">
                                                 {getTimeAgo(report.created_at)}
                                             </span>
                                             <div>
@@ -238,6 +248,13 @@ function Reports() {
                         currentPage={currentPage}
                         setCurrentPage={setCurrentPage}
                         handlePageSizeChange={handlePageSizeChange}
+                        pageSizeOptions={[
+                            { value: 9, label: "9 per page" },
+                            { value: 18, label: "18 per page" },
+                            { value: 27, label: "27 per page" },
+                            { value: 36, label: "36 per page" },
+                            { value: 45, label: "45 per page" },
+                        ]}
                     />
                 </Card.Footer>
             </Card>

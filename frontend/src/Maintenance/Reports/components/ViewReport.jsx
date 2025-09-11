@@ -34,7 +34,7 @@ const ViewReport = ({ show, handleClose, report }) => {
       name === "status" &&
       ((report?.status === "Resolved" && value !== "Resolved") ||
         (report?.status === "In Progress" && value === "Pending"))
-    ) {
+    ) {            
       // Open confirmation modal
       setPendingChange({ name, value });
       setShowConfirm(true);

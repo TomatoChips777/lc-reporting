@@ -14,6 +14,7 @@ const CreateReport = ({ show, handleClose }) => {
         status: '',
         image: null,
         description: '',
+        report_type: '',
 
     });
 
@@ -27,6 +28,7 @@ const CreateReport = ({ show, handleClose }) => {
             status: '',
             image: null,
             description: '',
+            report_type: '',
         })
     }
     const handleInputChange = (e) => {
@@ -56,7 +58,7 @@ const CreateReport = ({ show, handleClose }) => {
             }
         });
         try {
-            const response = await axios.post(`${import.meta.env.VITE_CREATE_REPORT}`, formDataObj, {
+            const response = await axios.post(`${import.meta.env.VITE_ADMIN_CREATE_REPORT}`, formDataObj, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
@@ -85,14 +87,12 @@ const CreateReport = ({ show, handleClose }) => {
                     </Form.Group>
 
                     <Form.Group className='mb-3'>
-                        <Form.Label>Category</Form.Label>
-                        <Form.Select name='category' value={formData.category} onChange={handleInputChange} required>
-                            <option value="">Select Category</option>
-                            <option value="Electrical">Electrical</option>
-                            <option value="Plumbing">Plumbing</option>
-                            <option value="Cleaning">Cleaning</option>
-                            <option value="General Repair">General Repair</option>
-                            <option value="Other">Other</option>
+                        <Form.Label>Report Type</Form.Label>
+                        <Form.Select name='report_type' value={formData.report_type} onChange={handleInputChange} required>
+                            <option value="">Select Report Type</option>
+                            <option value="Incident">Incident Report</option>
+                            <option value="Lost And Found">Lost And Found</option>
+                            <option value="Maintenance">Maintenance Report</option>
                         </Form.Select>
                     </Form.Group>
 
@@ -107,11 +107,28 @@ const CreateReport = ({ show, handleClose }) => {
                         </Form.Select>
                     </Form.Group>
 
-                    <Form.Group className='mb-3'>
-                        <Form.Label>Assigned Staff</Form.Label>
-                        <Form.Control type='text' name='assigned_staff' value={formData.assigned_staff} onChange={handleInputChange}></Form.Control>
-                    </Form.Group>
 
+                    {formData.report_type === "Maintenance" && (
+                        <>
+                            <Form.Group className='mb-3'>
+                                <Form.Label>Category</Form.Label>
+                                <Form.Select name='category' value={formData.category} onChange={handleInputChange} required>
+                                    <option value="">Select Category</option>
+                                    <option value="Electrical">Electrical</option>
+                                    <option value="Plumbing">Plumbing</option>
+                                    <option value="Cleaning">Cleaning</option>
+                                    <option value="General Repair">General Repair</option>
+                                    <option value="Other">Other</option>
+                                </Form.Select>
+                            </Form.Group>
+
+                            <Form.Group className='mb-3'>
+                                <Form.Label>Assigned Staff <small className='text-muted'>(Optional)</small></Form.Label>
+                                <Form.Control type='text'  name="assigned_staff" value={formData.assigned_staff} onChange={handleInputChange}></Form.Control>
+                            </Form.Group>
+                        </>
+
+                    )}
                     <Form.Group className='mb-3'>
                         <Form.Label>Status</Form.Label>
                         <Form.Select name='status' value={formData.status} onChange={handleInputChange} required>

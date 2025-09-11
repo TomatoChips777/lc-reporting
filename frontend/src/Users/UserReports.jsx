@@ -139,10 +139,10 @@ function UserReports() {
                 </div>
                 <span
                   className={`badge px-3 py-2 fs-6 ${report.status === "Pending"
-                      ? "bg-warning text-dark"
-                      : report.status === "In Progress"
-                        ? "bg-primary"
-                        : "bg-success"
+                    ? "bg-warning text-dark"
+                    : report.status === "In Progress"
+                      ? "bg-primary"
+                      : "bg-success"
                     }`}
                 >
                   {report.status}
@@ -155,7 +155,15 @@ function UserReports() {
               </p>
 
               {/* View More Button */}
-              <div className="text-end">
+              <div
+                className={`d-flex ${report.viewed === 0 ? "justify-content-end" : "justify-content-between"
+                  }`}
+              >
+                {report.viewed !== 0 && (
+                  <p className="text-truncate mb-0 text-muted" style={{ maxWidth: "80%" }}>
+                    {report.viewed === 1 ? "Viewed" : report.viewed}
+                  </p>
+                )}
                 <button
                   className="btn btn-sm btn-outline-primary"
                   onClick={() => setExpandedReport(report)}
@@ -168,26 +176,57 @@ function UserReports() {
         </ul>
       )}
       {expandedReport && (
-        <Modal show onHide={() => setExpandedReport(null)} size="xl">
+        <Modal show onHide={() => setExpandedReport(null)} size="lg" centered>
           <Modal.Header closeButton>
-            <Modal.Title>Report Details</Modal.Title>
+            <Modal.Title className="fw-bold">Report Details</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {expandedReport.image_path && (
-              <Image
-                src={`${import.meta.env.VITE_IMAGES}/${expandedReport.image_path}`}
-                alt="Report"
-                fluid
-                rounded
-                className="mb-3 border"
-                style={{ maxHeight: "300px", objectFit: "cover" }}
-              />
-            )}
-            <h5>{expandedReport.location}</h5>
-            <p>{expandedReport.description}</p>
-            <p className="text-muted">
-              Reported on {FormatDate(expandedReport.created_at)}
-            </p>
+            <Row>
+              {/* Image Section */}
+              <Col md={5} className="mb-3">
+                {expandedReport.image_path ? (
+                  <Image
+                    src={`${import.meta.env.VITE_IMAGES}/${expandedReport.image_path}`}
+                    alt="Report"
+                    fluid
+                    rounded
+                    className="border"
+                    style={{ maxHeight: "300px", objectFit: "cover", width: "100%" }}
+                  />
+                ) : (
+                  <div className="d-flex align-items-center justify-content-center border rounded bg-light" style={{ height: "300px" }}>
+                    <span className="text-muted">No Image Available</span>
+                  </div>
+                )}
+              </Col>
+
+              {/* Details Section */}
+              <Col md={7}>
+                <h5 className="fw-bold mb-2">{expandedReport.location}</h5>
+                <span
+                  className={`badge px-3 py-2 fs-6 mb-3 ${expandedReport.status === "Pending"
+                      ? "bg-warning text-dark"
+                      : expandedReport.status === "In Progress"
+                        ? "bg-primary"
+                        : "bg-success"
+                    }`}
+                >
+                  {expandedReport.status}
+                </span>
+
+                <p className="text-muted mb-1">
+                  <strong>Reported on:</strong> {FormatDate(expandedReport.created_at)}
+                </p>
+
+                <hr />
+
+                <p>
+                  <strong>Description:</strong>
+                  <br />
+                  {expandedReport.description}
+                </p>
+              </Col>
+            </Row>
           </Modal.Body>
           <Modal.Footer>
             <button
@@ -206,7 +245,13 @@ function UserReports() {
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         handlePageSizeChange={handlePageSizeChange}
-        showPageSizeSelect={false}
+        // showPageSizeSelect={false}
+        pageSizeOptions={[
+          { value: 4, label: "4 per page" },
+          { value: 8, label: "8 per page" },
+          { value: 12, label: "12 per page" },
+          { value: 16, label: "16 per page" },
+          { value: 20, label: "20 per page" },]}
       />
     </Container>
   );

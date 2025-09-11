@@ -30,7 +30,7 @@ const CreateReport = ({ show, handleClose }) => {
       image: null,
       description: '',
       report_type: 'Maintenance',
-      is_anonymous: false, // ✅ reset
+      is_anonymous: false, 
     });
   };
 

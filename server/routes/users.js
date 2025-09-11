@@ -175,30 +175,6 @@ router.post('/manual-signin', async (req, res) => {
     }
 });
 
-// router.post('/register', async (req, res) => {
-//     const { email, password } = req.body;
-
-//     if (!email || !password) {
-//         return res.status(400).json({ error: 'Missing required fields' });
-//     }
-
-//     try {
-//         // Hash the password before saving to the database
-//         const hashedPassword = await bcrypt.hash(password, 10);
-
-//         // Save the user to the database
-//         await db.queryAsync(
-//             'INSERT INTO tbl_users (email, password) VALUES ( ?, ?)',
-//             [email, hashedPassword]
-//         );
-
-//         return res.status(201).json({ success: true, message: 'User registered successfully' });
-//     } catch (err) {
-//         console.error('Register error:', err);
-//         res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
-
 router.post('/add-user', async (req, res) => {
     const { email, password, name, picture } = req.body;
 

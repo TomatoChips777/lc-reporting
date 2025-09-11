@@ -97,7 +97,7 @@ function TopNavbar({ toggleSidebar }) {
             <Button variant="outline-secondary" onClick={toggleSidebar} className="me-2">
               ☰
             </Button>
-            <Navbar.Brand className="fw-bold">LC Maintenance</Navbar.Brand>
+            <Navbar.Brand className="fw-bold">Report Management</Navbar.Brand>
           </div>
           <Navbar.Toggle
             aria-controls="top-navbar-nav"
@@ -158,7 +158,7 @@ function TopNavbar({ toggleSidebar }) {
                       alt="User"
                     />
                   ) : (
-                    <PersonCircle className="me-2" size={30} />
+                    <PersonCircle className="me-2" size={30}/>
                   )}
                   <span className="d-none d-md-inline">
                     {user.name || user.email || ''}

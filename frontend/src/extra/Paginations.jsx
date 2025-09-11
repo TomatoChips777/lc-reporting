@@ -7,8 +7,15 @@ const PaginationControls = ({
   currentPage,
   setCurrentPage,
   handlePageSizeChange,
-  showPageSizeSelect = true,       // NEW → default: show
-  disablePageSizeSelect = false    // NEW → default: enabled
+  showPageSizeSelect = true,       // default: show select
+  disablePageSizeSelect = false,   // default: enabled
+  pageSizeOptions = [              // customizable options
+    { value: 10, label: "10 per page" },
+    { value: 20, label: "20 per page" },
+    { value: 30, label: "30 per page" },
+    { value: 40, label: "40 per page" },
+    { value: 50, label: "50 per page" },
+  ]
 }) => {
   const totalPages = Math.ceil(filteredReports.length / pageSize);
 
@@ -27,11 +34,11 @@ const PaginationControls = ({
             disabled={disablePageSizeSelect}
             className="me-2 rounded-0"
           >
-            <option value="10">10 per page</option>
-            <option value="20">20 per page</option>
-            <option value="30">30 per page</option>
-            <option value="40">40 per page</option>
-            <option value="50">50 per page</option>
+            {pageSizeOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
           </Form.Select>
         )}
         <span className="text-muted" style={{ fontSize: '0.79rem' }}>
@@ -58,7 +65,10 @@ const PaginationControls = ({
           {Array.from({ length: totalPages }, (_, i) => {
             const pageNumber = i + 1;
             return (
-              <li key={pageNumber} className={`page-item ${pageNumber === currentPage ? 'active' : ''}`}>
+              <li
+                key={pageNumber}
+                className={`page-item ${pageNumber === currentPage ? 'active' : ''}`}
+              >
                 <Button
                   variant="link"
                   className="page-link rounded-0"

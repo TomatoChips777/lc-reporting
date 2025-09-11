@@ -44,6 +44,10 @@ function Reports() {
             const matchesStatus = statusFilter === 'All' || report.status === statusFilter;
             const matchesPriority = priorityFilter === 'All' || report.priority === priorityFilter;
             return matchesSearch && matchesStatus && matchesPriority;
+        }) .sort((a, b) => {
+            // Custom sort: Pending first, then In Progress, then Resolved
+            const order = { "Pending": 1, "In Progress": 2, "Resolved": 3 };
+            return (order[a.status] || 99) - (order[b.status] || 99);
         });
     }, [reports, search, statusFilter, priorityFilter]);
 
@@ -57,7 +61,6 @@ function Reports() {
         fetchReports();
         const socket = io(`${import.meta.env.VITE_API_URL}`);
         socket.on('updateReports', () => {
-
             fetchReports();
         });
 
@@ -89,12 +92,6 @@ function Reports() {
     const handleCloseAlert = () => {
         setShowAlert(false);
     };
-
-    const handleStatusChange = async (e, report) => {
-        const newStatus = e.target.value;
-
-        // if(report.status==)
-    }
 
     const handlePageSizeChange = (e) => {
         setItemsPerPage(Number(e.target.value));
@@ -252,7 +249,6 @@ function Reports() {
                 />
 
         </Container>
-
     )
 
 };
