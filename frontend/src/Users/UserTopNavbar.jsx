@@ -88,7 +88,7 @@ function UserTopNavbar() {
           onClick={() => handleNavClick("Report")}
           className="fw-bold fs-5 fs-md-4 fs-lg-3"
         >
-          Maintenance Reporting
+          LC Reporting
         </Navbar.Brand>
 
         {/* Toggle button on the right */}
@@ -208,129 +208,6 @@ function UserTopNavbar() {
         </Navbar.Collapse>
       </Container>
     </Navbar>
-
-    // <Navbar
-    //   bg="success"
-    //   variant="dark"
-    //   expand="xl"
-    //   sticky="top"
-    //   className="px-3 p-3"
-
-    // >
-    //   <Container fluid>
-    //     {/* Brand */}
-    //     {/* <Navbar.Brand
-    //       href="#"
-    //       onClick={() => handleNavClick("Report")}
-    //       className="fw-bold"
-    //     >
-    //       Maintenance Reporting
-    //     </Navbar.Brand> */}
-
-    //     <Navbar.Brand
-    //       href="#"
-    //       onClick={() => handleNavClick("Report")}
-    //       className="fw-bold user-navbar-brand"
-    //     >
-    //       Maintenance Reporting
-    //     </Navbar.Brand>
-
-    //     {/* Mobile toggle */}
-    //     <Navbar.Toggle aria-controls="user-navbar-nav" />
-
-    //     {/* Collapsible links */}
-    //     <Navbar.Collapse id="user-navbar-nav">
-    //       <Nav className="me-auto">
-    //         {["Report", "My Reports"].map((key) => (
-    //           <Nav.Link
-    //             key={key}
-    //             onClick={() => handleNavClick(key)}
-    //             className={
-    //               activeLink === key
-    //                 ? "fw-bold text-light"
-    //                 : "text-white"
-    //             }
-    //           >
-    //             {key}
-    //           </Nav.Link>
-    //         ))}
-    //       </Nav>
-    //     </Navbar.Collapse>
-
-    //     {/* Always visible on right side */}
-    //     <Nav className="d-flex align-items-center">
-    //       {/* Notifications Dropdown */}
-    //       <Dropdown align="end" className="me-3">
-    //         <Dropdown.Toggle
-    //           variant="success"
-    //           className={`position-relative border-0 ${activeLink === "Notifications" ? "fw-bold text-light" : ""
-    //             }`}
-    //           onClick={() => handleNavClick("Notifications")}
-    //         >
-    //           {/* <i className="bi bi-bell-fill fs-5"></i> */}
-    //           {activeLink === 'Notifications' ? <i className="bi bi-bell-fill fs-5"></i> : <i className="bi bi-bell fs-5"></i>}
-    //           {notifications.length > 0 && (
-    //             <Badge
-    //               bg="danger"
-    //               pill
-    //               className="position-absolute start-100 translate-middle"
-    //               style={{ top: "20%" }}
-    //             >
-    //               {notifications.length}
-    //             </Badge>
-    //           )}
-    //         </Dropdown.Toggle>
-    //         <Dropdown.Menu className="dropdown-menu-end">
-    //           <Dropdown.ItemText>
-    //             You have {notifications.length} notifications
-    //           </Dropdown.ItemText>
-    //           <Dropdown.Divider />
-    //           {notifications.map((n, index) => (
-    //             <Dropdown.Item
-    //               key={index}
-    //               onClick={() => handleNavClick("Notifications")}
-    //             >
-    //               <TextTruncate text={n.message} maxLength={40} />
-    //               <div className="text-muted small">
-    //                 {FormatDate(n.created_at)}
-    //               </div>
-    //             </Dropdown.Item>
-    //           ))}
-    //         </Dropdown.Menu>
-    //       </Dropdown>
-
-    //       {/* User Profile Dropdown */}
-    //       <Dropdown align="end">
-    //         <Dropdown.Toggle
-    //           variant="success"
-    //           className="d-flex align-items-center border-0"
-    //         >
-    //           {user?.image_url ? (
-    //             <Image
-    //               src={`${import.meta.env.VITE_IMAGES}/${user.image_url}`}
-    //               roundedCircle
-    //               className="me-2"
-    //               width={30}
-    //               height={30}
-    //               alt="User"
-    //             />
-    //           ) : (
-    //             <PersonCircle className="me-2" size={30} />
-    //           )}
-    //           <span className="d-none d-sm-inline">
-    //             {user?.name || user?.email || "User"}
-    //           </span>
-    //         </Dropdown.Toggle>
-    //         <Dropdown.Menu>
-    //           <Dropdown.Item href="#">Profile</Dropdown.Item>
-    //           <Dropdown.Item href="#">Settings</Dropdown.Item>
-    //           <Dropdown.Divider />
-    //           <Dropdown.Item onClick={signOut}>Logout</Dropdown.Item>
-    //         </Dropdown.Menu>
-    //       </Dropdown>
-    //     </Nav>
-    //   </Container>
-    // </Navbar>
   );
 }
 

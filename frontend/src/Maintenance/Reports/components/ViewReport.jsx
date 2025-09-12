@@ -15,7 +15,7 @@ const ViewReport = ({ show, handleClose, report }) => {
   // For confirmation modal
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingChange, setPendingChange] = useState(null);
-
+  const [showSendBack, setShowSendBack] = useState(null);
   useEffect(() => {
     if (report) {
       setFormData({
@@ -34,7 +34,7 @@ const ViewReport = ({ show, handleClose, report }) => {
       name === "status" &&
       ((report?.status === "Resolved" && value !== "Resolved") ||
         (report?.status === "In Progress" && value === "Pending"))
-    ) {            
+    ) {
       // Open confirmation modal
       setPendingChange({ name, value });
       setShowConfirm(true);
@@ -80,6 +80,33 @@ const ViewReport = ({ show, handleClose, report }) => {
     } catch (error) {
       console.error("Failed to update report:", error);
       alert("Failed to save changes. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+  const handleSendBack = () => {
+    setShowSendBack(true);
+  };
+
+  const confirmSendBack = async () => {
+    if (!report?.id) return;
+
+    try {
+      setSaving(true);
+      const response = await axios.put(
+        `${import.meta.env.VITE_SEND_BACK_REPORT}/${report.id}`,
+        { reason: "Not related to this department" }
+      );
+
+      if (response.status === 200) {
+        setShowSendBack(false);
+        handleClose();
+      } else {
+        alert("Failed to send back. Please try again.");
+      }
+    } catch (error) {
+      console.error("Failed to send back report:", error);
+      alert("Error occurred. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -184,7 +211,7 @@ const ViewReport = ({ show, handleClose, report }) => {
                 value={formData.status}
                 onChange={handleInputChange}
               >
-                <option value="">Select status</option>
+                <option value="">Select status</option>. 
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Resolved">Resolved</option>
@@ -193,6 +220,11 @@ const ViewReport = ({ show, handleClose, report }) => {
           </Row>
         </Modal.Body>
         <Modal.Footer>
+          {report?.status == 'Pending' && (
+            <Button variant="danger" onClick={handleSendBack} disabled={saving}>
+              Send Back
+            </Button>
+          )}
           <Button variant="secondary" onClick={handleClose} disabled={saving}>
             Close
           </Button>
@@ -204,6 +236,7 @@ const ViewReport = ({ show, handleClose, report }) => {
             {saving ? "Saving..." : "Save Changes"}
           </Button>
         </Modal.Footer>
+
       </Modal>
 
       {/* Confirmation Modal */}
@@ -228,6 +261,29 @@ const ViewReport = ({ show, handleClose, report }) => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Send Back Confirmation Modal */}
+      <Modal show={showSendBack} onHide={() => setShowSendBack(false)} centered animation={false}>
+        <Modal.Header closeButton>
+          <Modal.Title>Send Back Report</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>
+            Are you sure you want to send this report back to the
+            <strong> Report Manager</strong>?
+            <br />
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowSendBack(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmSendBack} disabled={saving}>
+            {saving ? "Sending..." : "Yes, Send Back"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
     </>
   );
 };

@@ -1,17 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db'); 
+const db = require('../config/db');
 
 // Dashboard Summary Endpoint
 router.get('/:user_id', async (req, res) => {
-  const {user_id} = req.params;
+  const { user_id } = req.params;
   try {
-  //   const reportsToday = `
-  //   SELECT COUNT(*) AS count
-  //   FROM tbl_reports
-  //   WHERE DATE(created_at) = CURDATE()
-  // `;
-  //   const reportsTodayResult = await db.queryAsync(reportsToday);
+    //   const reportsToday = `
+    //   SELECT COUNT(*) AS count
+    //   FROM tbl_reports
+    //   WHERE DATE(created_at) = CURDATE()
+    // `;
+    //   const reportsTodayResult = await db.queryAsync(reportsToday);
     // Overdue Returns: Count items that are not returned and have passed their return date
     const urgentReports = `
     SELECT COUNT(*) AS count FROM tbl_maintenance_reports tmr 
@@ -39,7 +39,7 @@ router.get('/:user_id', async (req, res) => {
 
     const mediumPriorityReportsResult = await db.queryAsync(mediumPriorityReports);
 
-      const lowPriorityReports = `
+    const lowPriorityReports = `
       SELECT COUNT(*) AS count
       FROM tbl_maintenance_reports tmr LEFT JOIN tbl_reports tr
       ON tmr.report_id = tr.id
@@ -79,47 +79,6 @@ router.get('/:user_id', async (req, res) => {
     `;
     const inventory = await db.queryAsync(inventoryQuery);
 
-    const eventsQuery = `
-   SELECT * FROM tbl_reports ORDER BY created_at; 
-  `;
-
-    const eventsRaw = await db.queryAsync(eventsQuery,[user_id]);
-
-    const eventsMap = new Map();
-    eventsRaw.forEach(row => {
-      if (!eventsMap.has(row.id)) {
-        eventsMap.set(row.id, {
-          id: row.id,
-          title: row.location,
-          startDate: row.created_at, // use start_datetime directly for comparison
-          endDate: row.end_datetime, // use end_datetime directly for comparison
-          time: `${new Date(row.created_at).toLocaleTimeString()}`,
-          priority: row.priority,
-          description: row.description,
-        });
-      }
-    });
-
-    const events = Array.from(eventsMap.values());
-
-    const now = new Date(); // Get current time
-
-    const isSameDate = (a, b) => a.toDateString() === b.toDateString();
-
-    const ongoingEvents = events.filter(event => {
-      const start = new Date(event.startDate);
-      const end = new Date(event.endDate);
-      return (now >= start && now <= end) || isSameDate(now, start);
-    });
-
-    const upcomingEvents = events.filter(event => {
-      const start = new Date(event.startDate);
-      return start > now && !isSameDate(now, start);
-    });
-    const todaysReport = events.filter(event => {
-      const start = new Date(event.created_at);
-      return isSameDate(now, start);
-    });
 
     const inProgressCountQuery = `
       SELECT COUNT(*) AS count
@@ -170,16 +129,71 @@ router.get('/:user_id', async (req, res) => {
     `;
     const recentlyCompletedList = await db.queryAsync(recentlyCompletedListQuery);
 
+    ;
+    const categoryQuery = `
+      SELECT *
+      FROM tbl_maintenance_reports tmr LEFT JOIN tbl_reports tr
+      ON tmr.report_id = tr.id
+      WHERE tr.archived = 0
+    `;
+    const categoryData = await db.queryAsync(categoryQuery);
+
+
+    const trendsQuery = {
+      daily: `
+    SELECT DATE(tr.updated_at) AS day,
+           AVG(TIMESTAMPDIFF(HOUR, tr.created_at, tr.updated_at)) AS avg_resolution_hours
+    FROM tbl_reports tr
+    JOIN tbl_maintenance_reports tmr ON tr.id = tmr.report_id
+    WHERE tr.status IN ('Resolved', 'Completed')
+    GROUP BY DATE(tr.updated_at)
+    ORDER BY day;
+  `,
+      weekly: `
+    SELECT YEAR(tr.updated_at) AS year,
+           WEEK(tr.updated_at, 1) AS week,
+           AVG(TIMESTAMPDIFF(HOUR, tr.created_at, tr.updated_at)) AS avg_resolution_hours
+    FROM tbl_reports tr
+    JOIN tbl_maintenance_reports tmr ON tr.id = tmr.report_id
+    WHERE tr.status IN ('Resolved', 'Completed')
+    GROUP BY year, week
+    ORDER BY year, week;
+  `,
+      monthly: `
+    SELECT YEAR(tr.updated_at) AS year,
+           MONTH(tr.updated_at) AS month,
+           AVG(TIMESTAMPDIFF(HOUR, tr.created_at, tr.updated_at)) AS avg_resolution_hours
+    FROM tbl_reports tr
+    JOIN tbl_maintenance_reports tmr ON tr.id = tmr.report_id
+    WHERE tr.status IN ('Resolved', 'Completed')
+    GROUP BY year, month
+    ORDER BY year, month;
+  `,
+      yearly: `
+    SELECT YEAR(tr.updated_at) AS year,
+           AVG(TIMESTAMPDIFF(HOUR, tr.created_at, tr.updated_at)) AS avg_resolution_hours
+    FROM tbl_reports tr
+    JOIN tbl_maintenance_reports tmr ON tr.id = tmr.report_id
+    WHERE tr.status IN ('Resolved', 'Completed')
+    GROUP BY year
+    ORDER BY year;
+  `
+    };
+
+    const [daily, weekly, monthly, yearly] = await Promise.all([
+      db.queryAsync(trendsQuery.daily),
+      db.queryAsync(trendsQuery.weekly),
+      db.queryAsync(trendsQuery.monthly),
+      db.queryAsync(trendsQuery.yearly),
+    ]);
     // Compose and send full dashboard data
     res.json({
       reportFrequencyResult,
       inventory,
-      ongoingEvents,
-      upcomingEvents,
-      todaysReport,
       reportsTodayList,
       inProgressList,
       recentlyCompletedList,
+      categoryData,
       quickStats: {
         inProgessCount: inProgressResult[0].count,
         reportsToday: reportsTodayResult[0].count,
@@ -187,7 +201,13 @@ router.get('/:user_id', async (req, res) => {
         highPriorityReports: highPriorityReportsResult[0].count,
         mediumPriorityReports: mediumPriorityReportsResult[0].count,
         lowPriorityReports: lowPriorityReportsResult[0].count,
-        
+
+      },
+      trends: {
+        daily,
+        weekly,
+        monthly,
+        yearly
       },
       borrowersRanking: borrowersRankingResult,
       assistFrequency: assistFrequencyResult

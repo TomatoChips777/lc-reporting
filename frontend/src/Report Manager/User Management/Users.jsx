@@ -144,9 +144,12 @@ function Users() {
           <Col md={3}>
             <Form.Select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
               <option value="All">All Roles</option>
-              <option value="Admin">Admin</option>
               <option value="User">User</option>
-              <option value="Staff">Staff</option>
+              <option value="Admin">Admin</option>
+              <option value="Report Manager">Report Manager</option>
+              <option value="Maintenance Manager">Maitenance Manager</option>
+              <option value="Incident Manager">Incident Manager</option>
+              <option value="Lost & Found Manager">Lost & Found Manager</option>
             </Form.Select>
           </Col>
           <Col md={3} className="d-flex justify-content-end align-items-center">

@@ -15,6 +15,7 @@ function Sidebar({ sidebarOpen, activeLink, handleLinkClick }) {
       Calendar: '/events',
       Notifications: '/notifications',
       Users: '/users',
+      'Maintenance Reports': '/maintenance-reports',
     };
     navigate(routeMap[key]);
   };
@@ -31,6 +32,7 @@ function Sidebar({ sidebarOpen, activeLink, handleLinkClick }) {
           { key: 'Dashboard', icon: 'speedometer2' },
           {key: 'Users', icon: 'people-fill'},
           {key: 'Reports', icon: 'clipboard-data'},
+          {key: 'Maintenance Reports', icon: 'wrench-adjustable'},
           // { key: 'Inventory', icon: 'box-seam' },
           // { key: 'Borrowing', icon: 'arrow-left-right' },
           { key: 'Calendar', icon: 'calendar' },

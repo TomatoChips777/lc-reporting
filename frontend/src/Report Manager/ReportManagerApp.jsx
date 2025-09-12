@@ -14,6 +14,7 @@ import Notifications from './Notifications/Notifications';
 import Reports from './Reports/Reports';
 import LandingPage from '../LandingPage';
 import Users from './User Management/Users';
+import MaintenanceReports from './Maintenance Reports/Maintenance-Reports';
 function ReportManagerApp() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeLink, setActiveLink] = useState(() => {
@@ -33,6 +34,7 @@ function ReportManagerApp() {
       '/events': 'Calendar',
       '/notifications': 'Notifications',
       '/reports': 'Reports',
+      '/maintenance-reports' : 'Maintenance Reports',
 
     };
     setActiveLink(routeMap[path] || 'Dashboard');
@@ -66,6 +68,7 @@ function ReportManagerApp() {
                 <>
                   <Route path="/" element={<Dashboard />} />
                   <Route path='/reports' element={<Reports />} />
+                  <Route  path='/maintenance-reports' element={<MaintenanceReports/>}/>
                   <Route path='/users' element={<Users/>} />
                   <Route path="/events" element={<EventManager />} />
                   <Route path="/notifications" element={<Notifications />} />

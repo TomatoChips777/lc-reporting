@@ -185,7 +185,7 @@ function ReportPage() {
             <Form.Group className="mb-3 d-flex justify-content-end">
               <Form.Check
                 type="checkbox"
-                label="Post anonymously"
+                label="Submit Anonymously"
                 name="is_anonymous"
                 checked={formData.is_anonymous}
                 onChange={(e) =>
@@ -193,7 +193,7 @@ function ReportPage() {
                 }
               />
             </Form.Group>
-
+            
             {error && <Alert variant="danger">{error}</Alert>}
 
             {/* Submit */}
@@ -235,7 +235,7 @@ function ReportPage() {
           <Modal.Title>Report Submitted</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>Your maintenance report has been submitted successfully! ✅</p>
+          <p>Your report has been submitted successfully! ✅</p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="success" onClick={() => setShowSuccessModal(false)}>

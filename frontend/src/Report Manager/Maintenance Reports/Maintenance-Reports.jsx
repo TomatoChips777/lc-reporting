@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Card, Col, Container, Row, Form, Button } from 'react-bootstrap';
+import { Card, Col, Container, Row, Form, Button, Table } from 'react-bootstrap';
 import PaginationControls from '../../extra/Paginations';
 import ViewReport from './components/ViewReport';
 import CreateReport from './components/CreateReport';
@@ -9,48 +9,68 @@ import FormatDate from '../../extra/DateFormat';
 import TextTruncate from '../../extra/TextTruncate';
 import { io } from 'socket.io-client';
 
-function Reports() {
+function MaintenanceReports() {
     const [reports, setReports] = useState([]);
     const [showViewModal, setShowViewModal] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showAlert, setShowAlert] = useState(false);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
-    const [anonymousFilter, setAnonymousFilter] = useState('All');
+    const [priorityFilter, setPriorityFilter] = useState('All');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(9);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
     const [selectedReport, setSelectedReport] = useState('');
     const [reportToRemove, setReportToRemove] = useState('');
 
-    // fetch reports
+    //fetch reports
     const fetchReports = async () => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_GET_REPORTS}`);
-            setReports(response.data);
+            const response = await axios.get(`${import.meta.env.VITE_MAINTENANCE_REPORT}`);
+            setReports(response.data.reports);
+
         } catch (error) {
             console.log("Error fetching reports:", error);
         }
-    };
+    }
+
+    // const filteredReports = useMemo(() => {
+    //     return reports.filter(report => {
+    //         const matchesSearch =
+    //             report.description.toLowerCase().includes(search.toLowerCase()) ||
+    //             report.location.toLowerCase().includes(search.toLowerCase()) ||
+    //             report.reporter_name.toLowerCase().includes(search.toLowerCase()) ||
+    //             report.category.toLowerCase().includes(search.toLowerCase());
+
+    //         const matchesStatus = statusFilter === 'All' || report.status === statusFilter;
+    //         const matchesPriority = priorityFilter === 'All' || report.priority === priorityFilter;
+    //         return matchesSearch && matchesStatus && matchesPriority;
+    //     }) .sort((a, b) => {
+
+    //         const order = { "Pending": 1, "In Progress": 2, "Resolved": 3 };
+    //         return (order[a.status] || 99) - (order[b.status] || 99);
+    //     });
+    // }, [reports, search, statusFilter, priorityFilter]);
 
     const filteredReports = useMemo(() => {
-        return reports.filter(report => {
-            const matchesSearch =
-                report.description.toLowerCase().includes(search.toLowerCase()) ||
-                report.location.toLowerCase().includes(search.toLowerCase()) ||
-                report.reporter_name.toLowerCase().includes(search.toLowerCase());
+    return reports.filter(report => {
+        const matchesSearch =
+            report.description.toLowerCase().includes(search.toLowerCase()) ||
+            report.location.toLowerCase().includes(search.toLowerCase()) ||
+            report.reporter_name.toLowerCase().includes(search.toLowerCase()) ||
+            report.category.toLowerCase().includes(search.toLowerCase());
 
-            const matchesStatus = statusFilter === 'All' || report.status === statusFilter;
-            const matchesAnonymous =
-                anonymousFilter === 'All' ||
-                (anonymousFilter === 'Anonymous' && report.is_anonymous === 1);
-                (anonymousFilter === 'Non-Anonymous' && report.is_anonymous === 0);
+        const matchesPriority = priorityFilter === 'All' || report.priority === priorityFilter;
 
-            return matchesSearch && matchesStatus && matchesAnonymous;
-        }).sort((a,b) =>{
-            const order  = {"Pending": 1, "In Progress": 2, "Resolved": 3 };
-            return (order[a.status] || 99) - (order[b.status] || 99);
-        })
-    }, [reports, search, statusFilter, anonymousFilter]);
+        // Only Pending
+        const matchesStatus = report.status === "Pending";
+
+        return matchesSearch && matchesStatus && matchesPriority;
+    }).sort((a, b) => {
+        const order = { "Pending": 1, "In Progress": 2, "Resolved": 3 };
+        return (order[a.status] || 99) - (order[b.status] || 99);
+    });
+}, [reports, search, priorityFilter]);
+
 
     const currentData = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
@@ -67,61 +87,66 @@ function Reports() {
         return () => {
             socket.disconnect();
         };
+
     }, []);
 
-    const handleOpenViewModal = async (report) => {
-        if (report.viewed === 0) {
-            try {
-                const response = await axios.put(`${import.meta.env.VITE_MARK_AS_VIEWED}/${report?.id}`)
-            } catch (error) {
-
-            }
-        }
+    const handleOpenViewModal = (report) => {
         setSelectedReport(report);
-        setShowViewModal(true);
+        setShowViewModal(true)
     };
-    const handleCloseViewModal = () => setShowViewModal(false);
+    const handleCloseViewModal = () => {
+        setShowViewModal(false);
+    };
 
-    const handleOpenCreateModal = () => setShowCreateModal(true);
-    const handleCloseCreateModal = () => setShowCreateModal(false);
-
+    const handleOpenCreateModal = () => {
+        setShowCreateModal(true);
+    };
+    const handleCloseCreateModal = () => {
+        setShowCreateModal(false);
+    };
     const handleShowAlert = (report) => {
+
         setShowAlert(true);
         setReportToRemove(report);
     };
-    const handleCloseAlert = () => setShowAlert(false);
+    const handleCloseAlert = () => {
+        setShowAlert(false);
+    };
 
     const handlePageSizeChange = (e) => {
         setItemsPerPage(Number(e.target.value));
-        setCurrentPage(1);   
+        setCurrentPage(1);
     };
-    const getTimeAgo = (timestamp) => {
+    const getTimeAgo = (timestamp) =>{
         const units = [
-            { name: 'year', seconds: 31536000 },
-            { name: 'month', seconds: 2592000 },
-            { name: 'day', seconds: 86400 },
-            { name: 'hr', seconds: 3600 },
-            { name: 'min', seconds: 60 },
-            { name: 'sec', seconds: 1 },
+            {name: 'year', seconds: 31536000},
+            {name: 'month', seconds: 2592000},
+            {name: 'day', seconds: 86400},
+            {name: 'hr', seconds: 3600},
+            {name: 'min', seconds: 60},
+            {name: 'sec', seconds: 1},
         ];
         const diff = Math.floor((Date.now() - new Date(timestamp)) / 1000);
-        for (let unit of units) {
+        for(let unit of units){
             const value = Math.floor(diff / unit.seconds);
-            if (value > 0) return `${value} ${unit.name}${value > 1 ? 's' : ''} ago`;
+            if(value> 0) return `${value} ${unit.name}${value > 1 ? 's' : ''} ago`;
         }
         return 'just now';
-    };
+    }
     return (
-        <Container fluid className="p-0 y-0">
-            <Card className="p-1">
-                <h1 className="mb-4 text-center">Reports Management</h1>
+        <Container fluid className='p-0 y-0' >
+            <Card className='p-1'>
+
+                <h1 className='mb-4 text-center'>
+                    Reports Management
+                </h1>
                 <Row className="mb-3 p-3 align-items-end">
                     {/* Search */}
                     <Col md={4}>
                         <Form.Group controlId="searchReports">
                             <Form.Label>Search</Form.Label>
                             <Form.Control
-                                className="p-3 border-1"
+                                className='p-3 border-1'
                                 type="text"
                                 placeholder="Search Reports"
                                 value={search}
@@ -131,11 +156,11 @@ function Reports() {
                     </Col>
 
                     {/* Status Filter */}
-                    <Col md={3}>
+                    {/* <Col md={3}>
                         <Form.Group controlId="filterStatus">
                             <Form.Label>Filter By Status</Form.Label>
                             <Form.Select
-                                className="p-3 border-1"
+                                className='p-3 border-1'
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
                             >
@@ -145,35 +170,36 @@ function Reports() {
                                 <option value="Resolved">Resolved</option>
                             </Form.Select>
                         </Form.Group>
-                    </Col>
+                    </Col> */}
 
-                    {/* Anonymous Filter */}
+                    {/* Priority Filter */}
                     <Col md={3}>
-                        <Form.Group controlId="filterAnonymous">
-                            <Form.Label>Filter By Reporter</Form.Label>
+                        <Form.Group controlId="filterPriority">
+                            <Form.Label>Filter By Priority</Form.Label>
                             <Form.Select
-                                className="p-3 border-1"
-                                value={anonymousFilter}
-                                onChange={(e) => setAnonymousFilter(e.target.value)}
+                                className='p-3 border-1'
+                                value={priorityFilter}
+                                onChange={(e) => setPriorityFilter(e.target.value)}
                             >
                                 <option value="All">All</option>
-                                <option value="Anonymous">Anonymous</option>
-                                <option value="Non-Anonymous">Non-Anonymous</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
                             </Form.Select>
                         </Form.Group>
                     </Col>
 
                     {/* New Report Button */}
                     <Col md={2} className="d-flex justify-content-end">
-                        <Button variant="dark" className="p-3" onClick={handleOpenCreateModal}>
+                        <Button variant="dark" className='p-3' onClick={handleOpenCreateModal}>
                             <i className="bi bi-plus-circle me-2"></i>
                             New Report
                         </Button>
                     </Col>
                 </Row>
 
-                {/* Reports List */}
-                <ul className="list-unstyled row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 px-3">
+              <ul className="list-unstyled row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 px-3">
                     {currentData.length > 0 ? (
                         currentData.map((report) => (
                             <li key={report.id} className="col">
@@ -216,7 +242,6 @@ function Reports() {
                                                     size="sm"
                                                     className="me-2"
                                                     onClick={() => handleOpenViewModal(report)}
-                                                    
                                                 >
                                                     <i className="bi bi-eye"></i>
                                                 </Button>
@@ -241,7 +266,6 @@ function Reports() {
                         </li>
                     )}
                 </ul>
-
                 <Card.Footer>
                     <PaginationControls
                         filteredReports={filteredReports}
@@ -249,22 +273,31 @@ function Reports() {
                         currentPage={currentPage}
                         setCurrentPage={setCurrentPage}
                         handlePageSizeChange={handlePageSizeChange}
-                        pageSizeOptions={[
-                            { value: 9, label: "9 per page" },
-                            { value: 18, label: "18 per page" },
-                            { value: 27, label: "27 per page" },
-                            { value: 36, label: "36 per page" },
-                            { value: 45, label: "45 per page" },
-                        ]}
                     />
                 </Card.Footer>
             </Card>
+            
+                <ViewReport
+                    show={showViewModal}
+                    handleClose={handleCloseViewModal}
+                    report={selectedReport}
+                />
 
-            <ViewReport show={showViewModal} handleClose={handleCloseViewModal} report={selectedReport} />
-            <CreateReport show={showCreateModal} handleClose={handleCloseCreateModal} />
-            <ArchiveAlert show={showAlert} handleClose={handleCloseAlert} report={reportToRemove} />
+                <CreateReport
+                    show={showCreateModal}
+                    handleClose={handleCloseCreateModal}
+                />
+
+                <ArchiveAlert
+                    show={showAlert}
+                    handleClose={handleCloseAlert}
+                    report={reportToRemove}
+                />
+
         </Container>
-    );
-}
+    )
 
-export default Reports;
+};
+
+export default MaintenanceReports;
+

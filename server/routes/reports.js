@@ -144,7 +144,7 @@ router.put("/admin/edit-report-type/:reportId", (req, res) => {
 
                     // Step 3: Get all admins and staff
                     const receivers = db.queryAsync(
-                        'SELECT id FROM tbl_users WHERE role="admin" OR role="staff"'
+                        'SELECT id FROM tbl_users WHERE role="Maintenance Mananger"'
                     );
 
                     // Step 4: Insert one notification per receiver
@@ -156,7 +156,7 @@ router.put("/admin/edit-report-type/:reportId", (req, res) => {
                         );
                     }
                     req.io.emit('updateReports');
-                    req.io.emit('update'); // Notify frontend
+                    req.io.emit('update');
                     res.json({ success: true, message: "Report updated successfully" });
 
 
@@ -234,6 +234,8 @@ router.put("/admin/edit-report-type/:reportId", (req, res) => {
             res.json({ success: true, message: "Report type updated successfully" });
         }
     });
+    req.io.emit('updateReports');
+    req.io.emit('updateNotifications');
 });
 router.put('/report/set-viewed-report/:id', (req, res) => {
     const { id } = req.params;
@@ -258,9 +260,9 @@ router.put('/report/set-viewed-report/:id', (req, res) => {
 
 router.put('/report/archive-report/:id', (req, res) => {
     const { id } = req.params;
-    const {reason} = req.body;
-    if(!reason){
-        return res.status(400).json({success: false, message: "Error reason is required."})
+    const { reason } = req.body;
+    if (!reason) {
+        return res.status(400).json({ success: false, message: "Error reason is required." })
     }
     const query = `UPDATE tbl_reports SET archived = 1 WHERE id = ?`;
 
@@ -323,6 +325,36 @@ router.put('/report/archive-report/:id', (req, res) => {
 });
 
 
+router.put('/report/send-back/:id', (req, res) => {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+
+    const query1 = `UPDATE tbl_reports 
+                  SET report_type = ''
+                  WHERE id = ?`;
+
+    const query2 = `DELETE FROM tbl_maintenance_reports WHERE report_id = ?`;
+
+    db.query(query1, [id], (err) => {
+        if (err) {
+            console.error("Error updating tbl_reports:", err);
+            return res.status(500).json({ success: false, message: "Failed to reset report" });
+        }
+
+        db.query(query2, [id], (err2) => {
+            if (err2) {
+                console.error("Error deleting from tbl_maintenance_reports:", err2);
+                return res.status(500).json({ success: false, message: "Failed to clean maintenance record" });
+            }
+            req.io.emit('updateReports');
+
+            res.json({ success: true, message: "Report sent back to manager", reason });
+        });
+    });
+});
+
+
 router.post("/create", upload.single('image'), (req, res) => {
     const {
         report_type,
@@ -357,13 +389,13 @@ router.post("/create", upload.single('image'), (req, res) => {
             const maintenanceQuery = `
                 INSERT INTO tbl_maintenance_reports (report_id, category, priority, assigned_staff) 
                 VALUES (?, ?, ?, ?)`;
-
+            
             db.query(maintenanceQuery, [reportId, category, priority, assigned_staff], (err) => {
                 if (err) {
                     console.error("Error inserting into maintenance report:", err);
                     return res.status(500).json({ success: false, message: "Failed to create maintenance report" });
                 }
-
+                req.io.emit('updateReports');
                 req.io.emit('update');
                 res.json({ success: true, message: "Maintenance report created successfully" });
             });

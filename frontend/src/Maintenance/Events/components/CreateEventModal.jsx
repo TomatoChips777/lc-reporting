@@ -25,20 +25,41 @@ function CreateEventModal({
     const isStartDateInvalid = startDate && startDate < currentDate;
 
     // Function to check if end date is earlier than the start date or if start time is equal to end time
+    // const isDateOrTimeInvalid = () => {
+    //     if (!startDate || !endDate || !startTime || !endTime) return false;
+
+    //     // Check if the end date is earlier than the start date
+    //     if (endDate < startDate) return true;
+
+    //     // If start date and end date are the same, check if start time and end time are the same
+    //     if (startDate === endDate) {
+    //         const startTimeStr = `${startTime.hour}:${startTime.minute} ${startTime.ampm}`;
+    //         const endTimeStr = `${endTime.hour}:${endTime.minute} ${endTime.ampm}`;
+    //         return startTimeStr === endTimeStr; // Check if start time equals end time
+    //     }
+
+    //     return false; // If none of the conditions are met, return false
+    // };
+
+    // Function to check if end date/time is invalid
     const isDateOrTimeInvalid = () => {
         if (!startDate || !endDate || !startTime || !endTime) return false;
 
-        // Check if the end date is earlier than the start date
+        // If end date is before start date
         if (endDate < startDate) return true;
 
-        // If start date and end date are the same, check if start time and end time are the same
         if (startDate === endDate) {
-            const startTimeStr = `${startTime.hour}:${startTime.minute} ${startTime.ampm}`;
-            const endTimeStr = `${endTime.hour}:${endTime.minute} ${endTime.ampm}`;
-            return startTimeStr === endTimeStr; // Check if start time equals end time
+            // Convert start and end times to 24-hour numbers for comparison
+            const startHour = parseInt(startTime.hour) % 12 + (startTime.ampm === "PM" ? 12 : 0);
+            const endHour = parseInt(endTime.hour) % 12 + (endTime.ampm === "PM" ? 12 : 0);
+            const startMinutes = startHour * 60 + parseInt(startTime.minute);
+            const endMinutes = endHour * 60 + parseInt(endTime.minute);
+
+            // End must be strictly later than start
+            return endMinutes <= startMinutes;
         }
-        
-        return false; // If none of the conditions are met, return false
+
+        return false;
     };
 
     const renderTimeSelector = (label, timeObj, onChange) => (

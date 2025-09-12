@@ -45,7 +45,7 @@ const Charts = ({ type, data }) => {
     }, {});
   };
 
-  if (type === 'borrowingFrequency') {
+  if (type === 'reportsFrequency') {
     const groupedData = groupByTimeframe(data, 'created_at');
     const chartData = Object.entries(groupedData)
       .map(([key, count]) => ({ date: key, count }))
@@ -96,54 +96,59 @@ const Charts = ({ type, data }) => {
       </ResponsiveContainer>
     );
   }
+  if (type === 'resolutionTrends') {
+  const [timeframe, setTimeframe] = useState('daily');
 
-  // if (type === 'inventoryStatus') {
-  //   const statusCounts = data.reduce((acc, item) => {
-  //     acc[item.status] = (acc[item.status] || 0) + 1;
-  //     return acc;
-  //   }, {});
-  //   const statusChartData = Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
-  
-  //   const categoryCounts = data.reduce((acc, item) => {
-  //     const category = item.category || 'Uncategorized';
-  //     acc[category] = (acc[category] || 0) + 1;
-  //     return acc;
-  //   }, {});
-  //   const categoryChartData = Object.entries(categoryCounts).map(([name, value]) => ({ name, value }));
-  
-  //   return (
-  //     <div className="d-flex flex-column flex-md-row justify-content-around gap-4">
-  //       <div style={{ flex: 1 }}>
-  //         <h6 className="text-center">Inventory Status</h6>
-  //         <ResponsiveContainer width="100%" height={300}>
-  //           <PieChart>
-  //             <Pie data={statusChartData} dataKey="value" nameKey="name" outerRadius={100} label>
-  //               {statusChartData.map((_, idx) => (
-  //                 <Cell key={`status-${idx}`} fill={COLORS[idx % COLORS.length]} />
-  //               ))}
-  //             </Pie>
-  //             <Tooltip />
-  //           </PieChart>
-  //         </ResponsiveContainer>
-  //       </div>
-  //       <div style={{ flex: 1 }}>
-  //         <h6 className="text-center">Category Distribution</h6>
-  //         <ResponsiveContainer width="100%" height={300}>
-  //           <PieChart>
-  //             <Pie data={categoryChartData} dataKey="value" nameKey="name" outerRadius={100} label>
-  //               {categoryChartData.map((_, idx) => (
-  //                 <Cell key={`category-${idx}`} fill={COLORS[idx % COLORS.length]} />
-  //               ))}
-  //             </Pie>
-  //             <Tooltip />
-  //           </PieChart>
-  //         </ResponsiveContainer>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-  
-  if (type === 'inventoryStatus') {
+  const trendData = data?.[timeframe] || [];
+
+  // Normalize keys for chart
+  const chartData = trendData.map(item => {
+    if (timeframe === 'daily') {
+      return { label: item.day, avg: Number(item.avg_resolution_hours) };
+    }
+    if (timeframe === 'weekly') {
+      return { label: `${item.year}-W${item.week}`, avg: Number(item.avg_resolution_hours) };
+    }
+    if (timeframe === 'monthly') {
+      return { label: `${item.year}-${item.month}`, avg: Number(item.avg_resolution_hours) };
+    }
+    if (timeframe === 'yearly') {
+      return { label: `${item.year}`, avg: Number(item.avg_resolution_hours) };
+    }
+    return { label: '', avg: 0 };
+  });
+
+  return (
+    <>
+      <div className="d-flex justify-content-between align-items-center mb-2">
+        <h6 className="mb-0 text-muted">Average Resolution Time (hours)</h6>
+        <Form.Select
+          value={timeframe}
+          onChange={(e) => setTimeframe(e.target.value)}
+          style={{ width: '150px' }}
+        >
+          <option value="daily">Per Day</option>
+          <option value="weekly">Per Week</option>
+          <option value="monthly">Per Month</option>
+          <option value="yearly">Per Year</option>
+        </Form.Select>
+      </div>
+
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="label" />
+          <YAxis />
+          <Tooltip formatter={(value) => [`${value.toFixed(2)} hrs`, "Avg Time"]} />
+          <Legend />
+          <Line type="monotone" dataKey="avg" stroke="#82ca9d" strokeWidth={3} />
+        </LineChart>
+      </ResponsiveContainer>
+    </>
+  );
+}
+
+  if (type === 'reportStatus') {
     const statusCounts = data.reduce((acc, item) => {
       acc[item.status] = (acc[item.status] || 0) + 1;
       return acc;
@@ -160,7 +165,7 @@ const Charts = ({ type, data }) => {
     return (
       <div className="d-flex flex-column flex-md-row justify-content-around gap-4">
         <div style={{ flex: 1 }}>
-          <h6 className="text-center">Inventory Status</h6>
+          <h6 className="text-center">Status</h6>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie

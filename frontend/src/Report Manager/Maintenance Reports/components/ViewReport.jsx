@@ -7,28 +7,22 @@ const ViewReport = ({ show, handleClose, report }) => {
   const [formData, setFormData] = useState({
     priority: '',
     status: '',
-    report_type: '',
-    location: '',
-    category: ''
+    category: '',
+    location: ''
   });
   const [saving, setSaving] = useState(false);
 
   // For confirmation modal
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingChange, setPendingChange] = useState(null);
-
-  // For validation/error modal
-  const [showError, setShowError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
+  const [showSendBack, setShowSendBack] = useState(null);
   useEffect(() => {
     if (report) {
       setFormData({
         priority: report.priority || '',
         status: report.status || '',
-        report_type: report.report_type || '',
+        category: report.category || '',
         location: report.location || '',
-        category: formData.category || '',
       });
     }
   }, [report]);
@@ -41,6 +35,7 @@ const ViewReport = ({ show, handleClose, report }) => {
       ((report?.status === "Resolved" && value !== "Resolved") ||
         (report?.status === "In Progress" && value === "Pending"))
     ) {
+      // Open confirmation modal
       setPendingChange({ name, value });
       setShowConfirm(true);
     } else {
@@ -50,7 +45,6 @@ const ViewReport = ({ show, handleClose, report }) => {
       }));
     }
   };
-
   const confirmStatusChange = () => {
     if (pendingChange) {
       setFormData((prev) => ({
@@ -66,41 +60,53 @@ const ViewReport = ({ show, handleClose, report }) => {
     setShowConfirm(false);
     setPendingChange(null);
   };
+
   const handleSave = async () => {
     if (!report?.id) return;
-
-
-    if (!formData.priority || !formData.report_type) {
-      setErrorMessage("Please select both a priority level and a report type before saving.");
-      setShowError(true);
-      return;
-    } else if (!formData.priority) {
-      setErrorMessage("Please select a priority level before saving.");
-      setShowError(true);
-      return;
-    } else if (!formData.report_type) {
-      setErrorMessage("Please select a report type before saving.");
-      setShowError(true);
-      return;
-    }
 
     try {
       setSaving(true);
       const response = await axios.put(
-        `${import.meta.env.VITE_UPDATE_REPORT}/${report.id}`,
+        `${import.meta.env.VITE_UPDATE_MAINTENANCE_REPORT}/${report.id}`,
         formData
       );
 
       if (response.status === 200) {
+        // console.log("Report updated:", response.data);
         handleClose();
       } else {
-        setErrorMessage("Failed to save changes. Please try again.");
-        setShowError(true);
+        alert("Failed to save changes. Please try again.");
       }
     } catch (error) {
       console.error("Failed to update report:", error);
-      setErrorMessage("Failed to save changes. Please try again.");
-      setShowError(true);
+      alert("Failed to save changes. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+  const handleSendBack = () => {
+    setShowSendBack(true);
+  };
+
+  const confirmSendBack = async () => {
+    if (!report?.id) return;
+
+    try {
+      setSaving(true);
+      const response = await axios.put(
+        `${import.meta.env.VITE_SEND_BACK_REPORT}/${report.id}`,
+        { reason: "Not related to this department" }
+      );
+
+      if (response.status === 200) {
+        setShowSendBack(false);
+        handleClose();
+      } else {
+        alert("Failed to send back. Please try again.");
+      }
+    } catch (error) {
+      console.error("Failed to send back report:", error);
+      alert("Error occurred. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -177,46 +183,31 @@ const ViewReport = ({ show, handleClose, report }) => {
             </Col>
           </Row>
 
-          {/* Report Type */}
+          {/* Issue Type */}
           <Row className="mb-3">
-            <Col sm={3}><strong>Report Type:</strong></Col>
+            <Col sm={3}><strong>Category:</strong></Col>
             <Col>
               <Form.Select
-                name="report_type"
-                value={formData.report_type}
+                name="category"
+                value={formData.category}
                 onChange={handleInputChange}
               >
-                <option value="">Select report type</option>
-                <option value="Incident">Incident</option>
-                <option value="Lost And Found">Lost And Found</option>
-                <option value="Maintenance">Maintenance</option>
+                <option value="">Select issue type</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Plumbing">Plumbing</option>
+                <option value="Cleaning">Cleaning</option>
+                <option value="General Repair">General Repair</option>
+                <option value="Others">Other</option>
               </Form.Select>
             </Col>
           </Row>
-
-          {/* Issue Type - only if Maintenance */}
-          {formData.report_type === "Maintenance" && (
-            <Row className="mb-3">
-              <Col sm={3}><strong>Category:</strong></Col>
-              <Col>
-                <Form.Select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                >
-                  <option value="">Select Category</option>
-                  <option value="Electrical">Electrical</option>
-                  <option value="Plumbing">Plumbing</option>
-                  <option value="Cleaning">Cleaning</option>
-                  <option value="General Repair">General Repair</option>
-                  <option value="Others">Others</option>
-                </Form.Select>
-              </Col>
-            </Row>
-          )}
-
         </Modal.Body>
         <Modal.Footer>
+          {report?.status == 'Pending' && (
+            <Button variant="danger" onClick={handleSendBack} disabled={saving}>
+              Send Back
+            </Button>
+          )}
           <Button variant="secondary" onClick={handleClose} disabled={saving}>
             Close
           </Button>
@@ -228,6 +219,7 @@ const ViewReport = ({ show, handleClose, report }) => {
             {saving ? "Saving..." : "Save Changes"}
           </Button>
         </Modal.Footer>
+
       </Modal>
 
       {/* Confirmation Modal */}
@@ -253,22 +245,32 @@ const ViewReport = ({ show, handleClose, report }) => {
         </Modal.Footer>
       </Modal>
 
-      {/* Validation/Error Modal */}
-      <Modal show={showError} onHide={() => setShowError(false)} centered animation={false}>
+      {/* Send Back Confirmation Modal */}
+      <Modal show={showSendBack} onHide={() => setShowSendBack(false)} centered animation={false}>
         <Modal.Header closeButton>
-          <Modal.Title>Notice</Modal.Title>
+          <Modal.Title>Send Back Report</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p>{errorMessage}</p>
+          <p>
+            Are you sure you want to send this report back to the
+            <strong> Report Manager</strong>?
+            <br />
+          </p>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={() => setShowError(false)}>
-            OK
+          <Button variant="secondary" onClick={() => setShowSendBack(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmSendBack} disabled={saving}>
+            {saving ? "Sending..." : "Yes, Send Back"}
           </Button>
         </Modal.Footer>
       </Modal>
+
     </>
   );
 };
 
 export default ViewReport;
+
+

@@ -15,10 +15,11 @@ const Dashboard = () => {
   const [reports, setReports] = useState([]);
   const [quickStats, setQuickStats] = useState([]);
   const [loading, setLoading] = useState(true);
-
+ const [categoryData, setCategoryData] = useState([]);
   const [reportsToday, setReportsToday] = useState([]);
   const [inProgressReports, setInProgressReports] = useState([]);
   const [recentlyCompletedReports, setRecentlyCompletedReports] = useState([]);
+  const [avgData, setAvgData] = useState([]);
 
   const fetchData = async () => {
     axios.get(`${import.meta.env.VITE_DASHBOARD_DATA}/${user.id}`)
@@ -31,6 +32,8 @@ const Dashboard = () => {
         setReportsToday(res.data.reportsTodayList)
         setInProgressReports(res.data.inProgressList || []);
         setRecentlyCompletedReports(res.data.recentlyCompletedList || []);
+        setCategoryData(res.data.categoryData || []);
+        setAvgData(res.data.trends);
         setLoading(false);
       })
       .catch(err => {
@@ -92,16 +95,16 @@ const Dashboard = () => {
                 <Card.Header className="fw-semibold d-flex justify-content-between">Reports Frequency
                 </Card.Header>
                 <Card.Body>
-                  <Charts type="borrowingFrequency" data={reports} />
+                  <Charts type="reportsFrequency" data={reports} />
                 </Card.Body>
               </Card>
 
               <Card className="mb-3">
                 <Card.Header className="fw-semibold d-flex justify-content-between">
-                  Inventory Status
+                  Reports Summary
                 </Card.Header>
-                <Card.Body>
-                  <Charts type="inventoryStatus" data={inventoryData} />
+                <Card.Body> 
+                  <Charts type="reportStatus" data={categoryData} />
                 </Card.Body>
               </Card>
             </Col>
@@ -199,72 +202,10 @@ const Dashboard = () => {
                 </Accordion>
               )}
             </Card.Body>
+
+            {/* <Charts type="resolutionTrends" data={avgData} /> */}
+
           </Card>
-
-          {/* Ongoing task */}
-          {/* <Card className='mb-4'>
-            <Card.Header className="fw-semibold d-flex justify-content-between">
-              Ongoing Maintenance
-            </Card.Header>
-            <Card.Body>
-              {sortedOngoing.length === 0 ? (
-                <p>No ongoing maintenance</p>
-              ) : (
-                <Accordion flush>
-                  {sortedOngoing.map((event, idx) => (
-                    <Accordion.Item eventKey={String(idx)} key={idx}>
-                      <Accordion.Header>
-                        <div className="w-100 d-flex justify-content-between">
-                          <span>{event.title}</span>
-                          <span>{FormatDate(event.startDate, 'short')} | {event.time}</span>
-                        </div>
-                      </Accordion.Header>
-                      <Accordion.Body>
-                        <strong>Description:</strong>
-                        <ul className="mb-0">
-                          <li>{event.description}</li>
-                        </ul>
-                      </Accordion.Body>
-                    </Accordion.Item>
-                  ))}
-                </Accordion>
-              )}
-            </Card.Body>
-          </Card> */}
-
-          {/* Recent Completed Task */}
-          {/* <Card className='mb-4'>
-            <Card.Header className="fw-semibold d-flex justify-content-between">
-              Recently Completed Task
-            </Card.Header>
-            <Card.Body>
-              {sortedUpcoming.length === 0 ? (
-                <p>No recent completed task</p>
-              ) : (
-                <Accordion flush>
-                  {sortedUpcoming.map((event, idx) => (
-                    <Accordion.Item eventKey={String(idx)} key={idx}>
-                      <Accordion.Header>
-                        <div className="w-100 d-flex justify-content-between">
-                          <span>{event.title}</span>
-                          <span>{FormatDate(event.startDate, 'short')}-{FormatDate(event.endDate, 'short')} | {event.time}</span>
-                        </div>
-                      </Accordion.Header>
-                      <Accordion.Body>
-                        <strong>Preparations:</strong>
-                        <ul className="mb-0">
-                          {(event.preparations || []).map((prep, pIdx) => (
-                            <li key={pIdx}>{prep.name} (x{prep.quantity})</li>
-                          ))}
-                        </ul>
-                      </Accordion.Body>
-                    </Accordion.Item>
-                  ))}
-                </Accordion>
-              )}
-            </Card.Body>
-          </Card> */}
-          {/* Inventory Table */}
           <DashboardInventoryCard inventoryData={inventoryData} />
         </Col>
       </Row>
